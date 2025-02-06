@@ -16,6 +16,7 @@ import ChatRoomModal from '@/models/ChatRoomModel';
 import { ChatRoom2Props } from './chatInterfaces';
 import { isValidUrl } from './chatUtils';
 import { API_BASE_URL } from '@/src/routes';
+import { CurrentRenderContext } from '@react-navigation/native';
 
 
 
@@ -43,9 +44,9 @@ const ChatRoom2: React.FC<ChatRoom2Props> = ({
   const isValid = (image: string) => isValidUrl(image);
 
   return (
-    <View style={{width: '100%', height: '100%', marginLeft:10}}>
+    <View style={{width: '100%', height: '100%'}}>
 
-        <View style={styles.header}>
+        <View style={[styles.header, {borderColor: currentColors.textSecondary}]}>
           {/* User avatar */}
           {userData.image ? (
             isValid(API_BASE_URL+userData.image) ? (
@@ -131,7 +132,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    paddingBottom: 15,
+    marginBottom: 15,
+    paddingHorizontal: 15,
   },
   avatar: {
     width: 40,

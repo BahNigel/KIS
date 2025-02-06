@@ -23,6 +23,9 @@ import ChatRoom from './ChatRoom';
 import ChatRoom2 from './ChartRoom2';
 import ListChats from './ListChats';
 import AddContacts from './AddContacts';
+import SearchBarModel from '@/models/searchBarModel';
+import NavigationButtons from './NavigationButtons';
+import { useRoute } from '@react-navigation/native';
 
 const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) => {
   const scheme = useColorScheme();
@@ -41,6 +44,8 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
   const [selectedChats, setSelectedChats] = useState<number[]>([]);
   const [isArchived, setIsArchived] = useState(false);
   const [addContacts, setAddContacts] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const route = useRoute();
   
   // State for storing chats
   const [chats, setChats] = useState<UserData[]>([]);
@@ -67,7 +72,7 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
   }, []);
 
   const sortedChats = sortChatsByLastMessageTime(chats);
-  const filteredChats = filterChats(sortedChats, activeFilter, isArchived);
+  const filteredChats = filterChats(sortedChats, activeFilter, isArchived, searchQuery);  // Pass searchQuery
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffsetY = event.nativeEvent.contentOffset.y;
@@ -101,11 +106,11 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: currentColors.background }]}>
-      <View style={{ flexDirection: isTablet ? 'row' : 'column', width: isTablet ? '50%' : '100%' }}>
+    <View style={[styles.container, { backgroundColor: currentColors.background }, {paddingHorizontal: isTablet ? 0: 15,}]}>
+      <View style={{flexDirection: isTablet ? 'row' : 'column', width: isTablet ? '31%' : '100%', minWidth: 300, }}>
         <Animated.View
           style={{
-            width: isTablet ? '10%' : 'auto',
+            width: isTablet ? '13%' : 'auto',
             transform: !isTablet ? [{ translateY: scrollAnim.interpolate({ inputRange: [0, 1], outputRange: [-100, 0] }) }] : [],
             zIndex: 1,
           }}
@@ -113,29 +118,37 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
           {/* Display titles based on screen width */}
           {isTablet ? (
             <ScrollView showsHorizontalScrollIndicator={false}>
-              <View style={styles.achieveSection}>
-                <TouchableOpacity onPress={() => setIsArchived((prev) => !prev)} style={[styles.achieveButton, isArchived ? styles.activeSelectButton : '']}>
-                  <Icon name="archive" size={15} color={isArchived ? 'white' : currentColors.textPrimary} solid={false} />
-                  <Text style={[styles.archivedText, { color: currentColors.coloredText }]}>{unreadArchived}</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.filterSection}>
-                <View style={{ flexDirection: 'column', flexWrap: 'wrap' }}>
-                  {['all', 'single', 'group', 'unread', 'favorite'].map((filter) => (
-                    <TouchableOpacity
-                      key={filter}
-                      style={[{ marginVertical: 4, padding: 10, borderRadius: 5 }, activeFilter === filter && styles.activeFilterButton]}
-                      onPress={() => setActiveFilter(filter)}
-                    >
-                      <Icon
-                        name={filter === 'all' ? 'list' : filter === 'single' ? 'user' : filter === 'group' ? 'users' : filter === 'unread' ? 'envelope' : 'star'}
-                        size={15}
-                        color={currentColors.textPrimary}
-                      />
-                    </TouchableOpacity>
-                  ))}
+              <View>
+                <View style={styles.achieveSection}>
+                  <TouchableOpacity onPress={() => setIsArchived((prev) => !prev)} style={[styles.achieveButton, isArchived ? styles.activeSelectButton : '']}>
+                    <Icon name="archive" size={15} color={isArchived ? 'white' : currentColors.textPrimary} solid={false} />
+                    <Text style={[styles.archivedText, { color: currentColors.coloredText }]}>{unreadArchived}</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.filterSection}>
+                  <View style={{ flexDirection: 'column', flexWrap: 'wrap' }}>
+                    {['all', 'single', 'group', 'unread', 'favorite'].map((filter) => (
+                      <TouchableOpacity
+                        key={filter}
+                        style={[{ marginVertical: 4, padding: 10, borderRadius: 5 }, activeFilter === filter && styles.activeFilterButton]}
+                        onPress={() => setActiveFilter(filter)}
+                      >
+                        <Icon
+                          name={filter === 'all' ? 'list' : filter === 'single' ? 'user' : filter === 'group' ? 'users' : filter === 'unread' ? 'envelope' : 'star'}
+                          size={15}
+                          color={currentColors.textPrimary}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </View>
+              <View>
+              <View style={{ flex: 1 }}>
+                <NavigationButtons activeTab={route.name} />
+              </View>
+              </View>
+              
             </ScrollView>
           ) : (
             <>
@@ -170,12 +183,51 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
             position: 'relative',
             borderTopLeftRadius: 10,
             backgroundColor: isTablet ? currentColors.backgroundSecondary : 'transparent',
-            width: isTablet ? '90%' : 'auto',
+            width: isTablet ? '87%' : 'auto',
             borderRightWidth: isTablet ? 0.5 : 0,
             transform: !isTablet ? [{ translateY: scrollAnim.interpolate({ inputRange: [0, 1], outputRange: [-100, 0] }) }] : [],
             zIndex: 1,
           }}
         >
+          {isTablet &&(
+            <>
+             <View style={styles.headerContainer1}>
+              {/* Top Layer */}
+              <View style={styles.topLayer}>
+                {/* Chat Text */}
+                <Text style={[styles.archivedText, { color: currentColors.textPrimary }]}>Chats</Text>
+                
+
+                <View style={styles.rightSection1}>
+                  {/* Camera Icon */}
+                  <TouchableOpacity style={{marginRight: 20}} onPress={() => {/* Handle camera action */}}>
+                    <Icon name="camera" size={24} color="gray" />
+                  </TouchableOpacity>
+
+                  {/* Hamburger Icon */}
+                  <TouchableOpacity onPress={() => {/* Handle hamburger menu */}}>
+                    <Icon name="bars" size={24} color="gray" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Bottom Layer - Search Bar */}
+              <View style={styles.centerSection1}>
+                <SearchBarModel
+                  value={searchQuery}
+                  onSearch={(query) => {
+                    setSearchQuery(query);  // Update search query state
+                  }}
+                />
+              </View>
+            </View>
+
+              
+            </>
+           
+            
+          )}
+          
           <FlatList
             data={filteredChats}
             renderItem={({ item }) => (
@@ -199,31 +251,31 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
             onScroll={handleScroll}
           />
 
-          {isTablet &&(
-            <TouchableOpacity onPress={()=>setAddContacts(true)} style={styles.addButton}>
+          {isTablet && (
+            <TouchableOpacity onPress={() => setAddContacts(true)} style={styles.addButton}>
               <Icon name="plus" size={20} color={currentColors.framButtonText} />
             </TouchableOpacity>
           )}
         </Animated.View>
-        {isTablet && (<>
-          <View style={{padding: 10, width: '100%', height: '100%', justifyContent:'center', alignItems: 'center', backgroundColor: isTablet ? currentColors.backgroundSecondary : 'transparent',}}>
-            
-            <ChatRoom2 userData={singleUserData} />
-          </View>
-        </>)}
-        
+
         
       </View>
 
-      {!isTablet &&(
-        <TouchableOpacity onPress={()=>setAddContacts(true)} style={styles.addButton}>
+      {isTablet && (
+          <View style={{ padding: 20, width: '69%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: isTablet ? currentColors.backgroundSecondary : 'transparent' }}>
+            <ChatRoom2 userData={singleUserData} />
+          </View>
+        )}
+
+      {!isTablet && (
+        <TouchableOpacity onPress={() => setAddContacts(true)} style={styles.addButton}>
           <Icon name="plus" size={20} color={currentColors.framButtonText} />
         </TouchableOpacity>
       )}
 
       <AddContacts visible={addContacts} onClose={() => setAddContacts(false)} />
+
       <Archived visible={modalVisible} onClose={() => setModalVisible(false)} />
-      <ChatRoom visible={ChatRoomVisible} onClose={() => setChatRoomVisible(false)} userData={singleUserData} />
     </View>
   );
 };

@@ -1,6 +1,7 @@
 export interface UserData {
   id: string;
   name: string;
+  contacts: string;
   lastMessage: string;
   image: string | null;
   lastMessageTime: string;
@@ -65,6 +66,7 @@ export const userDataInit = {
     id: '',
     name: '',
     lastMessage: '',
+    contacts: '',
     image: null,
     lastMessageTime: '',
     unreadCount: 0,

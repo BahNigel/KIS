@@ -13,7 +13,6 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 20,
-    paddingHorizontal: 15,
     backgroundColor: currentColors.background,
     flexDirection: isTablet ? 'row' : 'column', // Row for tablets, column for phones
   },
@@ -141,6 +140,50 @@ export const styles = StyleSheet.create({
     padding: 13, 
     backgroundColor:currentColors.tint, 
     borderRadius: 10, 
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f1f1', // Light Gray Background
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 10,
+    marginHorizontal: 10,
+  },
+  searchIcon: {
+    marginRight: 8,
+    color: '#555', // Subtle Gray Icon
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333', // Dark Text
+  },
+  headerContainer1: {
+    borderBlockColor: currentColors.textPrimary,
+    borderBottomWidth: 3,
+    zIndex: 5,
+    height: 110,
+  },
+  topLayer: {
+    flexDirection: 'row', // Arrange elements horizontally
+    justifyContent: 'space-between', // Distribute space between elements
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  leftSection1: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  rightSection1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  centerSection1: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
 });
 

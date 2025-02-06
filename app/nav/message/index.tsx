@@ -1,5 +1,5 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { View, Text, StyleSheet, useColorScheme, TextInput, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme, TextInput, TouchableOpacity, Animated, useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import Calls from '@/src/components/Messages/Calls/Calls';
 import Channels from '@/src/components/Messages/Channels/Channels';
@@ -12,12 +12,16 @@ import styles from './indexStyles';
 import { useNavigationState } from '@react-navigation/native';
 import { calculateUnreadCount } from '@/src/components/Messages/Chats/chatUtils';
 import { mockChats } from '@/src/components/Messages/mockChatsData';
+import useDynamicStyles from './indexStyles';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function MessagePage() {
   const colorScheme = useColorScheme(); // Get the current color scheme (light or dark)
   const currentColors = Colors[colorScheme || 'light']; // Default to 'light' if colorScheme is null
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const styles = useDynamicStyles();
 
   const [notifications, setNotifications] = useState({
     chats: 0,
@@ -123,22 +127,28 @@ export default function MessagePage() {
           <View>
             <View style={styles.upperHeader}>
               <Text style={[styles.headerText, { color: currentColors.textPrimary }]}>Kingdom Impact Social</Text>
-              <View style={styles.iconsContainer}>
-                <TouchableOpacity style={styles.iconButton}>
-                  <FontAwesome name="camera" size={20} color={currentColors.textPrimary} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton}>
-                  <FontAwesome name="bars" size={20} color={currentColors.textPrimary} />
-                </TouchableOpacity>
+              {!isTablet && (
+                <View style={styles.iconsContainer}>
+                  <TouchableOpacity style={styles.iconButton}>
+                    <FontAwesome name="camera" size={20} color={currentColors.textPrimary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconButton}>
+                    <FontAwesome name="bars" size={20} color={currentColors.textPrimary} />
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+            </View>
+            {!isTablet && (
+              <View style={styles.lowerHeader}>
+                <TextInput
+                  style={[styles.searchInput, { backgroundColor: currentColors.inputBackground, color: currentColors.textPrimary }]}
+                  placeholder="Search"
+                  placeholderTextColor={currentColors.textSecondary}
+                />
               </View>
-            </View>
-            <View style={styles.lowerHeader}>
-              <TextInput
-                style={[styles.searchInput, { backgroundColor: currentColors.inputBackground, color: currentColors.textPrimary }]}
-                placeholder="Search"
-                placeholderTextColor={currentColors.textSecondary}
-              />
-            </View>
+            )}
+            
           </View>
         )}
       </Animated.View>

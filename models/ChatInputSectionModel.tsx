@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
@@ -12,21 +12,20 @@ import { Colors } from '@/constants/Colors';
 
 interface Message {
   id: string;
-  type: 'text' | 'video' | 'screen_record' | 'voice_note' | 'emoji' | 'sticker' | 'file';
-  content: string; // URL for media or plain text for text messages
-  sender: string; // Specify sender as 'me' for current user
+  type: 'text';
+  content: string;
+  sender: string;
 }
 
 interface ChatInputProps {
-  setMessages: (messages: Message[]) => void;
-  messages: Message[];
+  onSendMessage: (message: Message) => void;
 }
 
-const ChatInputSectionModel: React.FC<ChatInputProps> = ({ setMessages, messages }) => {
+const ChatInputSectionModel: React.FC<ChatInputProps> = ({ onSendMessage }) => {
   const colorScheme = useColorScheme();
   const currentColors = colorScheme === 'dark' ? Colors.dark : Colors.light;
 
-  const [inputMessage, setInputMessage] = React.useState('');
+  const [inputMessage, setInputMessage] = useState('');
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768; // Adjust threshold for tablet size
 
@@ -34,17 +33,17 @@ const ChatInputSectionModel: React.FC<ChatInputProps> = ({ setMessages, messages
     if (inputMessage.trim()) {
       const newMessage: Message = {
         id: Date.now().toString(),
-        type: 'text', // Default to text
+        type: 'text',
         content: inputMessage.trim(),
         sender: 'me',
       };
-      setMessages([...messages, newMessage]);
+      onSendMessage(newMessage);
       setInputMessage('');
     }
   };
 
   return (
-    <View style={[styles.inputContainer, { backgroundColor: isTablet? currentColors.backgroundSecondary : 'transparent'}]}>
+    <View style={[styles.inputContainer, { backgroundColor: isTablet ? currentColors.backgroundSecondary : 'transparent' }]}>
       <TextInput
         style={[
           styles.input,
