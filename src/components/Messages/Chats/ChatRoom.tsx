@@ -107,18 +107,18 @@ const ChatRoom: React.FC<ChatRoomProps> = ({
                 <TouchableOpacity>
                     <Icon
                     name={userData.favorite ? 'star' : 'star-o'}
-                    size={20}
+                    size={15}
                     color={currentColors.textSecondary}
                     />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}>
-                    <Icon name="video-camera" size={20} color={currentColors.icon} />
+                    <Icon name="video-camera" size={15} color={currentColors.icon} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}>
-                    <Icon name="phone" size={20} color={currentColors.icon} />
+                    <Icon name="phone" size={15} color={currentColors.icon} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}>
-                    <Icon name="bars" size={20} color={currentColors.icon} />
+                    <Icon name="bars" size={15} color={currentColors.icon} />
                 </TouchableOpacity>
             </View>
           </View>
@@ -127,9 +127,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({
       }
     >
 
-        <ChatRoomModal
-            userData={userData}
-        />
+        <ChatRoomModal />
     </ModalRightToLeft>
   );
 };

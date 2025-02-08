@@ -118,7 +118,7 @@ const AddContacts: React.FC<ArchivedProps> = ({ visible, onClose }) => {
             setStoredContacts: (contacts) => setStoredContacts(contacts),
             setNonStoredContacts: (contacts) => setNonStoredContacts(contacts),
           })} style={styles.refreshButton}>
-            <Icon name="refresh" size={20} color={currentColors.textPrimary} />
+            <Icon name="refresh" size={15} color={currentColors.textPrimary} />
           </TouchableOpacity>
         </View>
       }
@@ -137,7 +137,7 @@ const AddContacts: React.FC<ArchivedProps> = ({ visible, onClose }) => {
       ) : (
         <View style={styles.searchContainer}>
           <View style={[styles.searchInputWrapper, { backgroundColor: currentColors.inputBackground }]}>
-            <Icon name="search" size={20} color={currentColors.textSecondary} style={styles.searchIcon} />
+            <Icon name="search" size={15} color={currentColors.textSecondary} style={styles.searchIcon} />
             <TextInput
               style={[styles.searchInput, { color: currentColors.textPrimary }]}
               placeholder="Search contacts"

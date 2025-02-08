@@ -20,7 +20,7 @@ const SearchBarModel: React.FC<SearchBarProps> = ({
 
   return (
     <View style={[styles.searchBarContainer, { backgroundColor: currentColors.inputBackground }]}>
-      <Icon name="search" size={18} style={styles.searchIcon} color={currentColors.icon} />
+      <Icon name="search" size={15} style={styles.searchIcon} color={currentColors.icon} />
       <TextInput
         style={[styles.searchInput, { color: currentColors.inputText }]}
         placeholder={placeholder}

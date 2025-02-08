@@ -29,7 +29,7 @@ export type IconSymbolName = keyof typeof MAPPING;
  */
 export function IconSymbol({
   name,
-  size = 24,
+  size = 15,
   color,
   style,
 }: {

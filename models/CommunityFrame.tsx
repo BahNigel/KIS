@@ -170,7 +170,7 @@ const CommunityFrame = ({
           <TouchableOpacity onPress={toggleOpen}>
             <Icon
               name={isRightSectionOpen ? 'chevron-right' : 'chevron-left'} // Left arrow when open, right arrow when closed
-              size={20}
+              size={15}
               color="white" // Make sure the arrow is visible on dark mode
               style={styles.arrow}
             />

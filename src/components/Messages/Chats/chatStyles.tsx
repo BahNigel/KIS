@@ -137,7 +137,7 @@ export const styles = StyleSheet.create({
     position: 'absolute', 
     bottom: 50, 
     right: 20, 
-    padding: 13, 
+    padding: 10, 
     backgroundColor:currentColors.tint, 
     borderRadius: 10, 
   },
@@ -161,8 +161,6 @@ export const styles = StyleSheet.create({
     color: '#333', // Dark Text
   },
   headerContainer1: {
-    borderBlockColor: currentColors.textPrimary,
-    borderBottomWidth: 3,
     zIndex: 5,
     height: 110,
   },
@@ -184,6 +182,10 @@ export const styles = StyleSheet.create({
   centerSection1: {
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  openAddFilterButton: {
+    padding: 12,
+    borderRadius: 5,
   },
 });
 

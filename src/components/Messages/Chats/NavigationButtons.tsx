@@ -104,7 +104,7 @@ export default function NavigationButtons({ activeTab }: NavigationButtonsProps)
           <View style={styles.iconContainer}>
             <Ionicons
               name={tabIcons[tab]}
-              size={24}
+              size={15}
               color={activeTab === tab ? theme.activeIconColor : theme.iconColor}
             />
             {notifications[tab as keyof typeof notifications] > 0 && (
@@ -130,8 +130,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   button: {
-    width: 50,
-    height: 50,
+    padding: 10,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',

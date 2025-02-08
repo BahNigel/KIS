@@ -103,7 +103,7 @@ const ModalLeftToRight: React.FC<ModalProps> = ({ visible, onClose, name, header
               {headerContent || <Text style={[styles.headerText, { color: currentColors.textPrimary }]}>{name}</Text>}
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.backButton}>
-              <Icon name="arrow-right" size={20} color={currentColors.icon} />
+              <Icon name="arrow-right" size={15} color={currentColors.icon} />
             </TouchableOpacity>
           </View>
 

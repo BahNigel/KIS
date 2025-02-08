@@ -1,5 +1,6 @@
 import moment from "moment";
-import { UserData } from "./chatInterfaces";
+import { HandleScrollParams, UserData } from "./chatInterfaces";
+import { Animated } from "react-native";
 
 
 // Utility function to filter chats
@@ -76,3 +77,33 @@ export  const handleSearch = (setSearchQuery: (arg0: string) => void, chats: any
     setFilteredChats(filtered);
   };
   
+
+export const handleScroll = ({
+  event,
+  lastOffset,
+  showFilter,
+  setShowFilter,
+  scrollAnim,
+  setLastOffset,
+}: HandleScrollParams) => {
+  const contentOffsetY = event.nativeEvent.contentOffset.y;
+  if (contentOffsetY <= 0 && contentOffsetY < lastOffset) {
+    if (!showFilter) {
+      setShowFilter(true);
+      Animated.timing(scrollAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  } else if (contentOffsetY > 0) {
+    if (showFilter) {
+      Animated.timing(scrollAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setShowFilter(false));
+    }
+  }
+  setLastOffset(contentOffsetY);
+};

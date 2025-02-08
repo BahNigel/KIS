@@ -27,6 +27,7 @@ export const Colors = {
     transparent: 'rgba(255, 255, 255, 0.1)', // Light mode transparent background
     primary: '#007bff',
     coloredText: '#2B4FA7', // Same as tintColorLight for a cohesive design
+    openButtonBackground: '#4C6EF5', // New background color for the button in light mode (soft blue)
   },
   dark: {
     text: '#FFFFFF', // textPrimary for dark mode
@@ -53,5 +54,6 @@ export const Colors = {
     transparent: 'rgba(0, 0, 0, 0.5)', // Dark mode transparent background
     primary: '#1a73e8',
     coloredText: '#1a73e8', // Same as primary for a cohesive design
+    openButtonBackground: '#2C5282', // New background color for the button in dark mode (darker blue)
   },
 };

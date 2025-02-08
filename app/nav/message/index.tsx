@@ -105,21 +105,21 @@ export default function MessagePage() {
         {select ? (
           <View style={styles.selectedHeader}>
             <TouchableOpacity onPress={toggleHeader} style={styles.arrowContainer}>
-              <FontAwesome name="arrow-left" size={20} color={currentColors.textPrimary} />
+              <FontAwesome name="arrow-left" size={15} color={currentColors.textPrimary} />
             </TouchableOpacity>
             <Text style={[styles.selectedText, { color: currentColors.textPrimary }]}>{selectedValue} selected</Text>
             <View style={styles.iconGroup}>
               <TouchableOpacity style={styles.iconButton}>
-                <FontAwesome name="thumb-tack" size={20} color={currentColors.textPrimary} />
+                <FontAwesome name="thumb-tack" size={15} color={currentColors.textPrimary} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton}>
-                <FontAwesome name="bell-slash" size={20} color={currentColors.textPrimary} />
+                <FontAwesome name="bell-slash" size={15} color={currentColors.textPrimary} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton}>
-                <FontAwesome name="archive" size={20} color={currentColors.textPrimary} />
+                <FontAwesome name="archive" size={15} color={currentColors.textPrimary} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton}>
-                <FontAwesome name="bars" size={20} color={currentColors.textPrimary} />
+                <FontAwesome name="bars" size={15} color={currentColors.textPrimary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -130,10 +130,10 @@ export default function MessagePage() {
               {!isTablet && (
                 <View style={styles.iconsContainer}>
                   <TouchableOpacity style={styles.iconButton}>
-                    <FontAwesome name="camera" size={20} color={currentColors.textPrimary} />
+                    <FontAwesome name="camera" size={15} color={currentColors.textPrimary} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.iconButton}>
-                    <FontAwesome name="bars" size={20} color={currentColors.textPrimary} />
+                    <FontAwesome name="bars" size={15} color={currentColors.textPrimary} />
                   </TouchableOpacity>
                 </View>
               )}

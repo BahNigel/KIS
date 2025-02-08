@@ -55,7 +55,7 @@ const ChatInputSectionModel: React.FC<ChatInputProps> = ({ onSendMessage }) => {
         onChangeText={setInputMessage}
       />
       <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-        <Icon name="paper-plane" size={24} color={currentColors.icon} />
+        <Icon name="paper-plane" size={15} color={currentColors.icon} />
       </TouchableOpacity>
     </View>
   );
