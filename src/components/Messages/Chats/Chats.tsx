@@ -22,6 +22,7 @@ import { getFilters } from './filterService';
 import AddFilterScreen from './AddFilterScreen';
 import FilterSection from './FilterSection';
 import ChatsSection from './ChatsSection';
+import AddUsers from '../addUsers';
 
 const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) => {
   const scheme = useColorScheme();
@@ -44,6 +45,14 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
 
   const [filters, setFilters] = useState<{ name: string; icon_name: string }[]>([]);
 
+  // State for storing chats
+  const [chats, setChats] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);  // Loading state
+  const [refresh, setRefresh] = useState(false);  // New refresh state
+
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+
   useEffect(() => {
     const fetchFilters = async () => {
       const retrievedFilters = await getFilters();
@@ -51,37 +60,43 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
     };
 
     fetchFilters();
-  }, []);
+  }, []); // Runs once on mount
 
+  const handleFilterUpdate = async () => {
+    const updatedFilters = await getFilters();
+    setFilters(updatedFilters); // Trigger re-render when filters change
+  };
+
+  // Function to fetch chats
+  const fetchChats = async () => {
+    try {
+      const data = await mockChats();
+      setChats(data);
+      setUnreadArchived(calculateAchievedUnreadCount(data));
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+      setLoading(false);
+    }
+  };
   
-  // State for storing chats
-  const [chats, setChats] = useState<UserData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);  // Loading state
-  
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
+
+  // Trigger fetching chats whenever `refresh` state changes
+  useEffect(() => {
+    if (refresh) {
+      setLoading(true);
+      fetchChats();
+      setRefresh(false); // Reset refresh state after fetching
+      setModalAddFilterVisible(false);
+    }
+  }, [refresh]);
 
   useEffect(() => {
-    // Fetch chats from mockChats
-    const fetchChats = async () => {
-      try {
-        const data = await mockChats();
-        setChats(data);
-        setUnreadArchived(calculateAchievedUnreadCount(data));
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching chats:', error);
-        setLoading(false);
-      }
-    };
-    
-    fetchChats();
-  }, []);
+    fetchChats(); // Initial data fetch
+  }, []);  // Runs once on mount
 
   const sortedChats = sortChatsByLastMessageTime(chats);
   const filteredChats = filterChats(sortedChats, activeFilter, isArchived, searchQuery);  // Pass searchQuery
-
-  
 
   if (loading) {
     return (
@@ -98,7 +113,7 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
           style={{
             width: isTablet ? '13%' : 'auto',
             transform: !isTablet ? [{ translateY: scrollAnim.interpolate({ inputRange: [0, 1], outputRange: [-100, 0] }) }] : [],
-            zIndex: 1,
+            zIndex: 9,
           }}
         >
           {/* Display titles based on screen width */}
@@ -113,7 +128,7 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
             setActiveFilter={setActiveFilter} 
             setModalAddFilterVisible={setModalAddFilterVisible} 
             route={route} 
-            setModalVisible={setModalVisible}
+            setModalVisible={setModalVisible} 
           />
         </Animated.View>
 
@@ -152,10 +167,10 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
       </View>
 
       {isTablet && (
-          <View style={{ padding: 20, width: '69%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: isTablet ? currentColors.backgroundSecondary : 'transparent' }}>
-            <ChatRoom2 userData={singleUserData} />
-          </View>
-        )}
+        <View style={{ padding: 20, width: '69%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: isTablet ? currentColors.backgroundSecondary : 'transparent' }}>
+          <ChatRoom2 userData={singleUserData} />
+        </View>
+      )}
 
       {!isTablet && (
         <TouchableOpacity onPress={() => setAddContacts(true)} style={styles.addButton}>
@@ -169,7 +184,9 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
 
       <Archived visible={modalVisible} onClose={() => setModalVisible(false)} />
 
-      <AddFilterScreen visible={isModalAddFilterVisible} onClose={() => setModalAddFilterVisible(false)} 
+      <AddFilterScreen visible={isModalAddFilterVisible} 
+            onFilterUpdate={handleFilterUpdate}  onClose={() => setModalAddFilterVisible(false) } 
+            setRefresh={setRefresh}
       />
     </View>
   );

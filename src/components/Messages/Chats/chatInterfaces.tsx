@@ -99,6 +99,7 @@ export interface FilterSectionProps {
     coloredText: string;
     backgroundSecondary: string;
     framButtonText: string;
+    tint: string;
   };
   unreadArchived: number;
   filters: { name: string; icon_name: string }[];

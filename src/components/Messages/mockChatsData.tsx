@@ -34,16 +34,25 @@ export const mockChats = async () => {
     }
 
     // Return the users with mock chat data
-    return users.map((user: { id: any; name: any; image: any; type: any; favorite: any; }) => ({
-      id: user.id,
-      name: user.name,
-      lastMessage: 'Some mock message', // Replace with actual message logic if needed
-      image: user.image || require('../../../assets/images/logo.png'),
-      lastMessageTime: getRandomTime(),
-      unreadCount: Math.floor(Math.random() * 5), // Random unread count
-      type: user.type || 'single', // Assuming type is part of user data
-      favorite: user.favorite || false, // Assuming favorite flag is part of user data
-    }));
+    return users.map((user: { id: any; name: any; image: any; type: any; favorite: any; }) => {
+      let type = user.type;
+
+      // Ensure type is an array and contains the original value
+      if (!Array.isArray(type)) {
+        type = type ? [type] : ['single']; // Convert non-array to an array with original value or default to ['single']
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        lastMessage: 'Some mock message', // Replace with actual message logic if needed
+        image: user.image || require('../../../assets/images/logo.png'),
+        lastMessageTime: getRandomTime(),
+        unreadCount: Math.floor(Math.random() * 5), // Random unread count
+        type, // Now always an array
+        favorite: user.favorite || false, // Assuming favorite flag is part of user data
+      };
+    });
   } catch (error) {
     console.error('Error fetching users from storage:', error);
     return [];

@@ -6,7 +6,7 @@ const scheme = 'light'; // Fallback value for scheme
 const currentColors = Colors[scheme ?? 'light'];
 
 // Get the screen width
-const { width } = Dimensions.get('window');
+const { width, height} = Dimensions.get('window');
 const isTablet = width >= 768; // Adjust threshold for tablet size
 
 export const styles = StyleSheet.create({
@@ -30,11 +30,11 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   filterButton: {
-    paddingVertical: 5,
+    paddingVertical: 7,
     paddingHorizontal: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     margin: 3,
-    backgroundColor: !isTablet? currentColors.tabIconDefault : 'transparent', // Button background based on scheme
+    backgroundColor: !isTablet? currentColors.tabIconDefault : 'transparent',
   },
   filterButtonText: {
     fontSize: 14,
@@ -133,7 +133,7 @@ export const styles = StyleSheet.create({
     color: currentColors.textSecondary, // Archived text color based on scheme
   },
   addButton: {
-    zIndex: 9, 
+    zIndex: 5, 
     position: 'absolute', 
     bottom: 50, 
     right: 20, 
@@ -161,7 +161,7 @@ export const styles = StyleSheet.create({
     color: '#333', // Dark Text
   },
   headerContainer1: {
-    zIndex: 5,
+    zIndex: 3,
     height: 110,
   },
   topLayer: {
@@ -186,6 +186,33 @@ export const styles = StyleSheet.create({
   openAddFilterButton: {
     padding: 12,
     borderRadius: 5,
+  },
+  dropdownContainer: {
+    position: 'absolute',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    backgroundColor: 'rgba(7, 7, 7, 0)',
+    padding: 10,
+    borderRadius: 8,
+    zIndex: 999,
+    width: width + 100,
+    height: height,
+  },
+  dropdownMenu: {
+    backgroundColor: currentColors.tint,
+    borderRadius: 5,
+    paddingVertical: 10,
+    position: 'relative',
+    width: "32%"
+  },
+  dropdownOption: {
+    paddingVertical: 10,
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  longPress: {
+    backgroundColor: 'red'
   },
 });
 

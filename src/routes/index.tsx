@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://192.168.237.37:8000'; // Your backend base URL
+export const API_BASE_URL = 'http://192.168.174.37:8000'; // Your backend base URL
 export const WEBSOCKET_URL = 'http://localhost:3000';  // 🔥 Note: Use HTTP, NOT ws://
 
 const ROUTES = {

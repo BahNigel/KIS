@@ -11,7 +11,8 @@ export enum CacheTypes {
     AUTH_CACHE = 'auth12_cache',      // Cache related to authentication
     NOTIFICATIONS_CACHE = 'notifications_cache', // Cache for notifications
     MEDIA_CACHE = 'media_cache',    // Cache for media files (images, videos, etc.)
-    REGISTERED_CONTACTS = 'registered_contacts'
+    REGISTERED_CONTACTS = 'registered_contacts',
+    FILTER_TYPE = 'filters',
   }
   
   /**
@@ -27,7 +28,8 @@ export enum CacheTypes {
     NOTIFICATIONS = 'notifications',          // Cache key for storing notifications
     MEDIA_IMAGES = 'media_images',            // Cache key for storing images in media cache
     MEDIA_VIDEOS = 'media_videos',            // Cache key for storing videos in media cache
-    REGISTERED_CONTACTS_KEY = 'registered_contacts_key'
+    REGISTERED_CONTACTS_KEY = 'registered_contacts_key',
+    FILTER_KEY = 'userFilters',
   }
   
   /**

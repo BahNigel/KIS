@@ -1,10 +1,17 @@
-import React from 'react';
-import { View, FlatList, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, FlatList, Text, TouchableOpacity, ScrollView, Modal, TouchableWithoutFeedback, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import NavigationButtons from './NavigationButtons';
 import { styles } from './chatStyles';
 import { FilterSectionProps } from './chatInterfaces';
 
+const defaultFilters = [
+  { name: 'all', icon_name: 'list' },
+  { name: 'single', icon_name: 'user' },
+  { name: 'group', icon_name: 'users' },
+  { name: 'unread', icon_name: 'envelope-open' },
+  { name: 'favorite', icon_name: 'star' }
+];
 
 const FilterSection: React.FC<FilterSectionProps> = ({
   isTablet,
@@ -19,6 +26,63 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   route,
   setModalVisible,
 }) => {
+  const [filterList, setFilterList] = useState(filters);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [longPressedFilter, setLongPressedFilter] = useState<string | null>(null);
+  const [longPress, setLongPress] = useState(false)
+  const { width } = Dimensions.get('window');
+  const dropdownWidth =  width - 230
+
+  const maxLeft = width - ( dropdownWidth); // Ensure dropdown does not cross the right edge
+  const minLeft = 10; // Ensures it does not go beyond the left edge
+  
+  // Store button refs to calculate position
+  const buttonRefs = useRef<{ [key: string]: any }>({});
+
+  // Update filterList whenever filters prop changes
+  useEffect(() => {
+    setFilterList(filters);
+    console.log(filters);
+  }, [filters]);
+
+  const handleLongPress = (filterName: string, event: any) => {
+    setLongPressedFilter(filterName);
+    setSelectedFilter(filterName);
+    const { pageY, pageX } = event.nativeEvent;
+    setDropdownPosition({ top: pageY, left: pageX });
+    setShowDropdown(true);
+  };
+
+  const handleEdit = () => {
+    console.log(`Edit filter: ${selectedFilter}`);
+    // Handle the Edit logic here (e.g., open an edit modal)
+    setShowDropdown(false);
+    setLongPressedFilter(null);
+  };
+
+  const handReorder = () => {
+    console.log(`Reorder filter: ${selectedFilter}`);
+    // Handle the Edit logic here (e.g., open an edit modal)
+    setShowDropdown(false);
+    setLongPressedFilter(null);
+  };
+
+  const handleDelete = () => {
+    console.log(`Delete filter: ${selectedFilter}`);
+    // Handle the Delete logic here (e.g., remove filter from state)
+    setShowDropdown(false);
+    setLongPressedFilter(null);
+  };
+
+  const handleCloseDropdown = () => {
+    setLongPressedFilter(null);
+    setLongPress(false)
+    setShowDropdown(false);
+    setSelectedFilter(null);
+  };
+
   return (
     <View>
       {isTablet ? (
@@ -35,11 +99,13 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             </View>
             <View style={styles.filterSection}>
               <View style={{ flexDirection: 'column', flexWrap: 'wrap' }}>
-                {filters.map((filter) => (
+                {filterList.map((filter) => (
                   <TouchableOpacity
                     key={filter.name}
+                    ref={(ref) => buttonRefs.current[filter.name] = ref}
                     style={[{ marginVertical: 4, padding: 10, borderRadius: 5 }, activeFilter === filter.name && styles.activeFilterButton]}
                     onPress={() => setActiveFilter(filter.name)}
+                    onLongPress={(event) => handleLongPress(filter.name, event)} // Added event to capture position
                   >
                     <Icon name={filter.icon_name} size={15} color={currentColors.textPrimary} />
                   </TouchableOpacity>
@@ -62,18 +128,24 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               horizontal
               contentContainerStyle={styles.filterButtons}
               showsHorizontalScrollIndicator={false}
-              data={filters}
+              data={filterList}
+              keyExtractor={(item) => item.name}
               renderItem={({ item: filter, index }) => (
                 <>
                   <TouchableOpacity
-                    key={filter.name}
-                    style={[styles.filterButton, activeFilter === filter.name && styles.activeFilterButton]}
+                    style={[
+                      styles.filterButton,
+                      activeFilter === filter.name && styles.activeFilterButton,
+                      longPressedFilter === filter.name && { backgroundColor: currentColors.tint }
+                    ]}
                     onPress={() => setActiveFilter(filter.name)}
+                    onLongPress={(event) => handleLongPress(filter.name, event)}
                   >
-                    <Text style={[styles.filterButtonText, { color: currentColors.textPrimary }]}>{filter.name}</Text>
+                    <Text style={[styles.filterButtonText, { color: currentColors.textPrimary }]}>
+                      {filter.name}
+                    </Text>
                   </TouchableOpacity>
-
-                  {index === filters.length - 1 && (
+                  {index === filterList.length - 1 && (
                     <TouchableOpacity onPress={() => setModalAddFilterVisible(true)} style={styles.openAddFilterButton}>
                       <Icon name="plus" size={15} color="#FFFFFF" />
                     </TouchableOpacity>
@@ -90,6 +162,49 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             </TouchableOpacity>
           </View>
         </>
+      )}
+
+      {/* Dropdown for Edit/Delete */}
+      {showDropdown && (
+        <TouchableWithoutFeedback onPress={handleCloseDropdown}>
+          <View style={[styles.dropdownContainer]}>
+            <View style={[styles.dropdownMenu,{backgroundColor: currentColors.tint}, { top:  110, left: Math.max(minLeft, Math.min(dropdownPosition.left - 15, maxLeft)) }]}>
+              <View style={{borderBottomWidth:1, borderBottomColor: currentColors.textPrimary, paddingHorizontal: 20}}>
+                <TouchableOpacity
+                  onPress={handleEdit}
+                  style={styles.dropdownOption}
+                >
+                  <View style={{flexDirection:'row'}}>
+                    <Icon name="edit" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
+                    <Text style={styles.dropdownOptionText}>Edit</Text>
+                  </View>
+                </TouchableOpacity>
+                {!defaultFilters.some(f => f.name === selectedFilter) && (
+                  <TouchableOpacity
+                    onPress={handleDelete}
+                    style={styles.dropdownOption}
+                  >
+                    <View style={{flexDirection:'row'}}>
+                      <Icon name="trash" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
+                      <Text style={styles.dropdownOptionText}>Delete</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <View style={{paddingHorizontal: 20}}>
+                <TouchableOpacity
+                  onPress={handReorder}
+                  style={styles.dropdownOption}
+                >
+                  <View style={{flexDirection:'row'}}>
+                    <Icon name="sort" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
+                    <Text style={styles.dropdownOptionText}>Reorder lists</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
       )}
     </View>
   );

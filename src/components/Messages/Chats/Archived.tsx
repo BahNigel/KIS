@@ -24,6 +24,7 @@ const Archived: React.FC<ArchivedProps> = ({ visible, onClose }) => {
   const [singleUserData, setSingleUserData] = useState<UserData>({
     id: '',
     name: '',
+    contacts:'',
     lastMessage: '',
     image: null,
     lastMessageTime: '',

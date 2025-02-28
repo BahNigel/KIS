@@ -5,29 +5,37 @@ import { Animated } from "react-native";
 
 // Utility function to filter chats
 export const filterChats = (chats: UserData[], activeFilter: string, isArchived: boolean, query: string = '') => {
-  // First filter by archived status
-  const nonArchivedChats = chats.filter((chat) => isArchived ? chat.archived : !chat.archived);
+  // First, filter by archived status
+  const filteredChats = chats.filter(chat => (isArchived ? chat.archived : !chat.archived));
 
   // Apply search filter if query is provided
   const searchFilteredChats = query
-    ? nonArchivedChats.filter((chat) =>
-        chat.name.toLowerCase().includes(query.toLowerCase()) || chat.lastMessage.toLowerCase().includes(query.toLowerCase())
+    ? filteredChats.filter(chat =>
+        chat.name.toLowerCase().includes(query.toLowerCase()) ||
+        (chat.lastMessage?.toLowerCase().includes(query.toLowerCase()) ?? false)
       )
-    : nonArchivedChats;
+    : filteredChats;
 
-  // Apply other filters based on activeFilter
-  switch (activeFilter) {
-    case 'single':
-      return searchFilteredChats.filter((chat) => chat.type === 'single');
-    case 'group':
-      return searchFilteredChats.filter((chat) => chat.type === 'group');
-    case 'unread':
-      return searchFilteredChats.filter((chat) => chat.unreadCount > 0);
-    case 'favorite':
-      return searchFilteredChats.filter((chat) => chat.favorite);
-    default:
-      return searchFilteredChats;
+    // If "all" is selected, return everything after search filter
+  if (!activeFilter || activeFilter === 'all') {
+    return searchFilteredChats;
   }
+
+  // Apply activeFilter
+  if (activeFilter) {
+    return searchFilteredChats.filter(chat => {
+      switch (activeFilter) {
+        case 'unread':
+          return chat.unreadCount > 0;
+        case 'favorite':
+          return chat.favorite;
+        default:
+          return chat.type.includes(activeFilter); // Ensure chat.type is an array and check if it includes the filter
+      }
+    });
+  }
+
+  return searchFilteredChats;
 };
 
 
