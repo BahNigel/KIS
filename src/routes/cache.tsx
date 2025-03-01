@@ -51,7 +51,7 @@ export const setCache = async (type: string, key: string, newData: any) => {
   try {
     await ensureDirectoryExists(dirPath);
     let existingData = await getCache(type, key);
-    
+
     if (!existingData || !Array.isArray(existingData)) {
       existingData = [];
     }
@@ -68,8 +68,13 @@ export const setCache = async (type: string, key: string, newData: any) => {
       }
     });
 
+    // Remove items from existingData that are not in newDataArray
+    existingData = existingData.filter((item: { id: any }) =>
+      newDataArray.some((newItem) => newItem.id === item.id)
+    );
+
     const jsonData = JSON.stringify(existingData);
-    
+
     if (Platform.OS === 'web') {
       localStorage.setItem(filePath, jsonData);
     } else {
@@ -79,6 +84,7 @@ export const setCache = async (type: string, key: string, newData: any) => {
     console.error(`Error writing cache file (${type}/${key}):`, error);
   }
 };
+
 
 // Clear specific cached data
 export const clearCacheByKey = async (type: string, key: string) => {

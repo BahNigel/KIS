@@ -129,6 +129,8 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
             setModalAddFilterVisible={setModalAddFilterVisible} 
             route={route} 
             setModalVisible={setModalVisible} 
+            onFilterUpdate={handleFilterUpdate}
+            setRefresh={setRefresh}
           />
         </Animated.View>
 

@@ -4,6 +4,9 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import NavigationButtons from './NavigationButtons';
 import { styles } from './chatStyles';
 import { FilterSectionProps } from './chatInterfaces';
+import EditFilterModal from './EditFilterModal';
+import ReorderFilterModal from './ReorderFilterModal';
+import { deleteFilter } from './filterService';
 
 const defaultFilters = [
   { name: 'all', icon_name: 'list' },
@@ -25,12 +28,17 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   setModalAddFilterVisible,
   route,
   setModalVisible,
+  onFilterUpdate,
+  setRefresh,
 }) => {
   const [filterList, setFilterList] = useState(filters);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [longPressedFilter, setLongPressedFilter] = useState<string | null>(null);
+  const [openEditFilter, setOpenEditFilter] = useState(false);
+  const [openReorderFilter, setOpenReorderFilter] = useState(false);
+  const [editFilterValue, setEditFilterValue] = useState<string | null>(null);
   const [longPress, setLongPress] = useState(false)
   const { width } = Dimensions.get('window');
   const dropdownWidth =  width - 230
@@ -48,32 +56,39 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   }, [filters]);
 
   const handleLongPress = (filterName: string, event: any) => {
-    setLongPressedFilter(filterName);
-    setSelectedFilter(filterName);
-    const { pageY, pageX } = event.nativeEvent;
-    setDropdownPosition({ top: pageY, left: pageX });
-    setShowDropdown(true);
+    if(filterName !== 'all'){
+      setLongPressedFilter(filterName);
+      setSelectedFilter(filterName);
+      const { pageY, pageX } = event.nativeEvent;
+      setDropdownPosition({ top: pageY, left: pageX });
+      setShowDropdown(true);
+    }
+   
   };
 
-  const handleEdit = () => {
+  const handleEdit = (Value: string|null) => {
     console.log(`Edit filter: ${selectedFilter}`);
     // Handle the Edit logic here (e.g., open an edit modal)
+    setEditFilterValue(Value);
     setShowDropdown(false);
     setLongPressedFilter(null);
+    setOpenEditFilter(true)
   };
+  const handleCloseEditFilter = () =>{
+    setOpenEditFilter(false);
+  }
+  const handleCloseReorderFilter = () =>{
+    setOpenReorderFilter(false);
+  }
 
-  const handReorder = () => {
-    console.log(`Reorder filter: ${selectedFilter}`);
-    // Handle the Edit logic here (e.g., open an edit modal)
-    setShowDropdown(false);
-    setLongPressedFilter(null);
-  };
-
-  const handleDelete = () => {
+  const handleDelete = async (value: string | null) => {
     console.log(`Delete filter: ${selectedFilter}`);
     // Handle the Delete logic here (e.g., remove filter from state)
+    await deleteFilter(value)
     setShowDropdown(false);
     setLongPressedFilter(null);
+    onFilterUpdate();
+    setRefresh(true);
   };
 
   const handleCloseDropdown = () => {
@@ -169,43 +184,37 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         <TouchableWithoutFeedback onPress={handleCloseDropdown}>
           <View style={[styles.dropdownContainer]}>
             <View style={[styles.dropdownMenu,{backgroundColor: currentColors.tint}, { top:  110, left: Math.max(minLeft, Math.min(dropdownPosition.left - 15, maxLeft)) }]}>
-              <View style={{borderBottomWidth:1, borderBottomColor: currentColors.textPrimary, paddingHorizontal: 20}}>
-                <TouchableOpacity
-                  onPress={handleEdit}
-                  style={styles.dropdownOption}
-                >
-                  <View style={{flexDirection:'row'}}>
-                    <Icon name="edit" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
-                    <Text style={styles.dropdownOptionText}>Edit</Text>
-                  </View>
-                </TouchableOpacity>
-                {!defaultFilters.some(f => f.name === selectedFilter) && (
+              {selectedFilter !== 'all' && (
+                <View style={{paddingHorizontal: 20}}>
                   <TouchableOpacity
-                    onPress={handleDelete}
+                    onPress={() => handleEdit(longPressedFilter)}
                     style={styles.dropdownOption}
                   >
-                    <View style={{flexDirection:'row'}}>
-                      <Icon name="trash" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
-                      <Text style={styles.dropdownOptionText}>Delete</Text>
+                    <View style={{ flexDirection: 'row' }}>
+                      <Icon name="edit" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
+                      <Text style={styles.dropdownOptionText}>Edit</Text>
                     </View>
                   </TouchableOpacity>
-                )}
-              </View>
-              <View style={{paddingHorizontal: 20}}>
-                <TouchableOpacity
-                  onPress={handReorder}
-                  style={styles.dropdownOption}
-                >
-                  <View style={{flexDirection:'row'}}>
-                    <Icon name="sort" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
-                    <Text style={styles.dropdownOptionText}>Reorder lists</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
+
+                  {!defaultFilters.some(f => f.name === selectedFilter) && (
+                    <TouchableOpacity
+                      onPress={() => handleDelete(selectedFilter)}
+                      style={styles.dropdownOption}
+                    >
+                      <View style={{ flexDirection: 'row' }}>
+                        <Icon name="trash" size={16} color={currentColors.textPrimary} style={{ marginRight: 10 }} />
+                        <Text style={styles.dropdownOptionText}>Delete</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
             </View>
+          
           </View>
         </TouchableWithoutFeedback>
       )}
+      <EditFilterModal visible={openEditFilter} onClose={handleCloseEditFilter} editFilterValue={editFilterValue} onFilterUpdate={onFilterUpdate} setRefresh={setRefresh}/>
     </View>
   );
 };

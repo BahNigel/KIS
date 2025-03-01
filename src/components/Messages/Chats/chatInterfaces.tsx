@@ -1,3 +1,4 @@
+import React from "react";
 import { Animated, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
 export interface UserData {
@@ -108,6 +109,8 @@ export interface FilterSectionProps {
   setModalAddFilterVisible: React.Dispatch<React.SetStateAction<boolean>>;
   route: { name: string };
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  onFilterUpdate: () => void;
+  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 

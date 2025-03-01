@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  useColorScheme, // For detecting the theme mode
+  useColorScheme,
 } from 'react-native';
 import ModalRightToLeft from '@/models/ModalRightToLeft';
 import { UserData } from './Chats/chatInterfaces';
@@ -18,22 +18,31 @@ import SearchBarModel from '@/models/searchBarModel';
 import styles from './addUsersStyle';
 import { addFilter } from './Chats/filterService';
 import { useNavigation } from '@react-navigation/native';
+import { getCachedDataByKey } from '@/src/routes/cache';
+import { CacheKeys, CacheTypes } from '@/src/routes/cacheKeys';
+
+const filterType = CacheTypes.FILTER_TYPE;
+const filterKey = CacheKeys.FILTER_KEY;
+const cacheType = CacheTypes.REGISTERED_CONTACTS;
+const cacheKey = CacheKeys.REGISTERED_CONTACTS_KEY;
 
 interface AddUsersProps {
   visible: boolean;
   onClose: () => void;
-  filterName: string; 
+  OldFilterName: string | null;
+  filterName: string;
   selectedIcon: string;
   onFilterUpdate: () => void;
   setRefresh: (value: boolean) => void;
 }
 
-const AddUsers: React.FC<AddUsersProps> = ({ visible, onClose, filterName, selectedIcon, onFilterUpdate, setRefresh}) => {
+const AddUsers: React.FC<AddUsersProps> = ({ visible, onClose, OldFilterName, filterName, selectedIcon, onFilterUpdate, setRefresh }) => {
   const [chats, setChats] = useState<UserData[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
-  const [searchText, setSearchText] = useState(''); // State for the search input
-  const [popupMessage, setPopupMessage] = useState(''); // State for the popup message
-  const colorScheme = useColorScheme(); // Detect the current theme mode (light or dark)
+  const [searchText, setSearchText] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+  const [filterId, setFilterId] = useState<Number | null>(null);
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     if (visible) {
@@ -51,6 +60,38 @@ const AddUsers: React.FC<AddUsersProps> = ({ visible, onClose, filterName, selec
     }
   }, [visible]);
 
+  useEffect(() => {
+    const loadFilterData = async () => {
+      const existingUsers = (await getCachedDataByKey(cacheType, cacheKey)) || [];
+      const existingFilter = (await getCachedDataByKey(filterType, filterKey)) || [];
+  
+      // Ensure filterName is present in the user.type array
+      const filteredUsers = existingUsers.filter((user: { type: string[] }) =>
+        OldFilterName !== null && user.type.includes(OldFilterName) // Ensure OldFilterName is a non-null string
+      );
+  
+      // Find the filter that matches OldFilterName
+      const filteredFilters = existingFilter.filter((filter: { name: string }) => filter.name === OldFilterName);
+  
+      // Safely set the filter ID if the filter exists
+      if (filteredFilters.length > 0) {
+        setFilterId(filteredFilters[0].id);
+      }
+  
+      // Set selected users based on the filtered users
+      if (filteredUsers.length > 0) {
+        setSelectedUsers(filteredUsers);
+      } else {
+        setSelectedUsers([]); // Reset if no users are found
+      }
+    };
+  
+    if (visible) {
+      loadFilterData();
+    }
+  }, [visible, OldFilterName]); // Add OldFilterName as a dependency so the effect re-runs when it changes
+  
+
   const handleSelectUser = (user: UserData) => {
     setSelectedUsers((prev) => {
       const isAlreadySelected = prev.some((u) => u.id === user.id);
@@ -67,20 +108,20 @@ const AddUsers: React.FC<AddUsersProps> = ({ visible, onClose, filterName, selec
 
   const handleSubmit = async () => {
     if (selectedUsers.length === 0) {
-      // Show popup message if no user is selected
       setPopupMessage('Please select at least one user!');
-      
-      // Hide the popup message after 5 seconds
       setTimeout(() => {
         setPopupMessage('');
       }, 2000);
     } else {
-        console.log('Selected Users:', selectedUsers);
-        await addFilter(filterName, selectedIcon, selectedUsers);
-        onFilterUpdate();
-        setRefresh(true);
-        onClose();
-      // Proceed with submission logic here
+      console.log('Selected Users:', selectedUsers);
+      if (filterId == null){
+        await addFilter(filterId, filterName, selectedIcon, selectedUsers);
+      }else{
+        await addFilter(Number(filterId), filterName, selectedIcon, selectedUsers);
+      }
+      onFilterUpdate();
+      setRefresh(true);
+      onClose();
     }
   };
 
@@ -89,16 +130,14 @@ const AddUsers: React.FC<AddUsersProps> = ({ visible, onClose, filterName, selec
     user.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Get the appropriate colors based on the current theme
   const themeColors = colorScheme === 'dark' ? Colors.dark : Colors.light;
 
   return (
-    <ModalRightToLeft visible={visible} onClose={onClose} name="Add Users" headerContent={<Text style={[styles.modalTitle, {color: themeColors.textPrimary}]}>Add Users</Text>}>
+    <ModalRightToLeft visible={visible} onClose={onClose} name="Add Users" headerContent={<Text style={[styles.modalTitle, { color: themeColors.textPrimary }]}>Add Users</Text>}>
       <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-        {/* Use SearchBarModel here */}
         <SearchBarModel
           value={searchText}
-          onSearch={setSearchText} // Update searchText as the user types
+          onSearch={setSearchText}
           placeholder="Search Users"
         />
 
