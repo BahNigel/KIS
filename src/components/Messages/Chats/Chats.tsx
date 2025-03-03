@@ -36,7 +36,6 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
   const [ChatRoomModalVisible, setChatRoomModalVisible] = useState(false);
   const [ChatRoomVisible, setChatRoomVisible] = useState(false);
   const [singleUserData, setSingleUserData] = useState<UserData>(userDataInit);
-  const [selectedChats, setSelectedChats] = useState<number[]>([]);
   const [isArchived, setIsArchived] = useState(false);
   const [addContacts, setAddContacts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -156,8 +155,6 @@ const Chats: React.FC<ChatsProps> = ({ select, setSelectedValue, setSelect }) =>
             setSelectedValue={setSelectedValue} 
             setSelect={setSelect} 
             setAddContacts={setAddContacts} 
-            selectedChats={selectedChats} 
-            setSelectedChats={setSelectedChats} 
             setSingleUserData={setSingleUserData} 
             viewChart={viewChart} 
             setViewChart={setViewChart} 

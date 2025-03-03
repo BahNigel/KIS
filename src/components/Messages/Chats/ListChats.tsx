@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,12 +17,10 @@ import { UserData } from './chatInterfaces';
 import { API_BASE_URL } from '@/src/routes';
 
 interface ListChatsProps {
-  chats: UserData[];  // Using `chats` instead of `filteredChats`
+  chats: UserData[];
   select: boolean;
   setSelectedValue: (value: number) => void;
   setSelect: (value: boolean) => void;
-  selectedChats: number[];
-  setSelectedChats: React.Dispatch<React.SetStateAction<number[]>>;
   setSingleUserData: (data: UserData) => void;
   viewChart: number | null;
   setViewChart: (id: number | null) => void;
@@ -31,12 +29,10 @@ interface ListChatsProps {
 }
 
 const ListChats: React.FC<ListChatsProps> = ({
-  chats,  // Changed this to `chats`
+  chats,
   select,
   setSelectedValue,
   setSelect,
-  selectedChats,
-  setSelectedChats,
   setSingleUserData,
   viewChart,
   setViewChart,
@@ -46,59 +42,63 @@ const ListChats: React.FC<ListChatsProps> = ({
   const scheme = useColorScheme();
   const currentColors = Colors[scheme ?? 'light'];
   const { width } = useWindowDimensions();
+  const [selectedChats, setSelectedChats] = useState<number[]>([]);
+  const [selectedChatsCount, setSelectedChatsCount] = useState<number>(0); // New state to track count
   const isTablet = width >= 768;
 
   const isValid = (image: string) => isValidUrl(image);
 
   const handleLongPress = (chatId: number) => {
-      if (!select) {
-        setSelect(true); // Start selecting mode
+    if (!select) {
+      setSelect(true);
+    }
+
+    setSelectedChats((prevSelectedChats) => {
+      const updatedSelectedChats = [...prevSelectedChats];
+      if (!updatedSelectedChats.includes(chatId)) {
+        updatedSelectedChats.push(chatId);
       }
-  
-      // Mark chat as selected on long press
-      setSelectedChats((prevSelectedChats) => {
-        const updatedSelectedChats = [...prevSelectedChats];
-        if (!updatedSelectedChats.includes(chatId)) {
-          updatedSelectedChats.push(chatId);
-        }
-        setSelectedValue(updatedSelectedChats.length);
-        console.log('Selected Chat IDs:', updatedSelectedChats); // Log selected chat IDs
-        return updatedSelectedChats;
-      });
-    };
-    
+      const newCount = updatedSelectedChats.length;
+      setSelectedValue(newCount);
+      setSelectedChatsCount(newCount); // Update state
+      console.log('Selected Chat Count:', newCount);
+      return updatedSelectedChats;
+    });
+  };
+
   useEffect(() => {
     if (!select) {
       setSelectedValue(0);
       setSelectedChats([]);
+      setSelectedChatsCount(0); // Reset count when deselecting
     }
-  }, [select, setSelectedValue, setSelectedChats]);
+  }, [select]);
 
   const handleChatPress = (chatId: number, chatData: any) => {
-      if (select) {
-        // If in selection mode, toggle selection
-        setSelectedChats((prevSelectedChats) => {
-          let updatedSelectedChats = [...prevSelectedChats];
-          if (updatedSelectedChats.includes(chatId)) {
-            updatedSelectedChats = updatedSelectedChats.filter((id) => id !== chatId);
-          } else {
-            updatedSelectedChats.push(chatId);
-          }
-          setSelectedValue(updatedSelectedChats.length);
-          console.log('Selected Chat IDs:', updatedSelectedChats); // Log selected chat IDs
-          return updatedSelectedChats;
-        });
-      } else {
-        // If not in selection mode, proceed to chat room
-        setSingleUserData(chatData);
-        if(isTablet){
-          setViewChart(chatId)
-          setChatRoomModalVisible(true)
-        }else{
-         setChatRoomVisible(true); 
+    if (select) {
+      setSelectedChats((prevSelectedChats) => {
+        let updatedSelectedChats = [...prevSelectedChats];
+        if (updatedSelectedChats.includes(chatId)) {
+          updatedSelectedChats = updatedSelectedChats.filter((id) => id !== chatId);
+        } else {
+          updatedSelectedChats.push(chatId);
         }
+        const newCount = updatedSelectedChats.length;
+        setSelectedValue(newCount);
+        setSelectedChatsCount(newCount); // Update state
+        console.log('Selected Chat Count:', newCount);
+        return updatedSelectedChats;
+      });
+    } else {
+      setSingleUserData(chatData);
+      if (isTablet) {
+        setViewChart(chatId);
+        setChatRoomModalVisible(true);
+      } else {
+        setChatRoomVisible(true);
       }
-    };
+    }
+  };
 
   const renderChatItem = ({ item }: { item: UserData }) => (
     <TouchableOpacity
@@ -113,8 +113,8 @@ const ListChats: React.FC<ListChatsProps> = ({
     >
       <View style={styles.profileImageWrapper}>
         {item.image ? (
-          isValid(API_BASE_URL+item.image) ? (
-            <Image source={{ uri: API_BASE_URL+item.image }} style={styles.profileImage} />
+          isValid(API_BASE_URL + item.image) ? (
+            <Image source={{ uri: API_BASE_URL + item.image }} style={styles.profileImage} />
           ) : (
             <Icon name="users" size={25} color={currentColors.icon} />
           )
@@ -141,13 +141,13 @@ const ListChats: React.FC<ListChatsProps> = ({
 
   return (
     <FlatList
-      data={chats}  // Use `chats` instead of `filteredChats`
+      data={chats}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderChatItem}
       contentContainerStyle={{ paddingBottom: 20 }}
-      initialNumToRender={10} // To optimize initial rendering
-      maxToRenderPerBatch={5}  // To limit the number of items rendered in each batch
-      updateCellsBatchingPeriod={50}  // To optimize scrolling performance
+      initialNumToRender={10}
+      maxToRenderPerBatch={5}
+      updateCellsBatchingPeriod={50}
     />
   );
 };

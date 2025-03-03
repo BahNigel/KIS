@@ -17,8 +17,6 @@ const ChatsSection: React.FC<ChatsSectionProps> = ({
   setSelectedValue,
   setSelect,
   setAddContacts,
-  selectedChats,
-  setSelectedChats,
   setSingleUserData,
   viewChart,
   setViewChart,
@@ -63,8 +61,6 @@ const ChatsSection: React.FC<ChatsSectionProps> = ({
             select={select}
             setSelectedValue={setSelectedValue}
             setSelect={setSelect}
-            selectedChats={selectedChats}
-            setSelectedChats={()=>setSelectedChats}
             setSingleUserData={setSingleUserData}
             viewChart={viewChart}
             setViewChart={setViewChart}

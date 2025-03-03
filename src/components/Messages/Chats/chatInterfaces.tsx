@@ -14,6 +14,41 @@ export interface UserData {
   archived?: boolean;
 }
 
+export interface logedInUserData {
+  id: string;
+  name: string;
+  contacts: string;
+  lastMessage: string;
+  image: string | null;
+  lastMessageTime: string;
+  unreadCount: number;
+  type: any;
+  favorite: boolean;
+  archived?: boolean;
+  status: string;
+  points: Number;
+  space: Number;
+  files: Number;
+}
+
+export const defaultUserData = {
+  id: '',
+  name: 'Unknown User',
+  contacts: '',
+  lastMessage: 'No messages yet.',
+  image: null,
+  lastMessageTime: '',
+  unreadCount: 0,
+  type: '', // Set to an empty string, but adjust as necessary
+  favorite: false,
+  archived: false,
+  status: 'No status available',
+  points: 0,
+  space: 0,
+  files: 0,
+};
+
+
 export interface ChatsProps {
   select: boolean; // Added 'select' with boolean type
   setSelectedValue: React.Dispatch<React.SetStateAction<number>>; // Correctly typing setSelectedValue
@@ -129,8 +164,6 @@ export interface ChatsSectionProps {
   setSelectedValue: (value: any) => void;
   setSelect: (select: boolean) => void;
   setAddContacts: (value: boolean) => void;
-  selectedChats: number[];
-  setSelectedChats: (chats: number[]) => void;
   setSingleUserData: (data: any) => void; // Type this more specifically based on your data structure
   viewChart: number | null;
   setViewChart: (value: number | null) => void;
