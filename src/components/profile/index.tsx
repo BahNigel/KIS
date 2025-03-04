@@ -8,6 +8,8 @@ import { API_BASE_URL } from '@/src/routes';
 import ModalRightToLeft from '@/models/ModalRightToLeft';
 import { Colors } from '@/constants/Colors';
 import handleChooseImage, { encodeImageToBase64, saveProfileData } from './profileActions';
+import JobInputs from './jobInputs';
+import Status from './inputs/status';
 
 export default function EditProfile({ visible, onClose }:{visible:boolean, onClose:()=>void}) {
   const [userName, setUserName] = useState('');
@@ -22,6 +24,9 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
   const [experience, setExperience] = useState('');
   const [services, setServices] = useState('');
   const [certificates, setCertificates] = useState('');
+  const [status, setStatus] = useState('');
+  const [openStatus, setOpenStatus] = useState(true);
+  const closeStatus = () =>{setOpenStatus(false)}
   
   const scheme = useColorScheme(); // Get the current theme (light or dark)
   
@@ -45,6 +50,7 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
         setExperience(parsedUserData.experience || '');
         setServices(parsedUserData.services || '');
         setCertificates(parsedUserData.certificates || '');
+        setStatus(parsedUserData.status || '');
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -67,7 +73,8 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
       education, 
       experience, 
       services, 
-      certificates
+      certificates,
+      status
     );
     onClose();
   };
@@ -78,7 +85,7 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
       onClose={onClose}
       name="Edit Profile"
       headerContent={
-        <Text style={{ color: currentColors.textPrimary, fontWeight: 'bold' }} onPress={onClose}>
+        <Text style={{ color: currentColors.textPrimary, fontWeight: 700, fontSize: 20 }} onPress={onClose}>
           Edit
         </Text>
       }
@@ -92,218 +99,105 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
           )}
         </TouchableOpacity>
 
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="account" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="User Name"
-            placeholderTextColor={currentColors.textSecondary}
-            value={userName}
-            onChangeText={setUserName}
-          />
+        <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
+        <MaterialCommunityIcons name="account" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
+        <TextInput
+          style={{
+            height: 40,
+            borderBottomWidth: 1,
+            borderBottomColor: currentColors.textSecondary,
+            marginBottom: 10,
+            color: currentColors.textPrimary,
+
+            marginLeft: 10,
+            
+            width: '90%',
+          }}
+          placeholder="User Name"
+          placeholderTextColor={currentColors.textSecondary}
+          value={userName}
+          onChangeText={setUserName}
+        />
+      </View>
+
+      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
+        <MaterialCommunityIcons name="information" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
+        <TextInput
+          style={{
+            height: 40,
+            borderBottomWidth: 1,
+            borderBottomColor: currentColors.textSecondary,
+            marginBottom: 10,
+            color: currentColors.textPrimary,
+            
+            marginLeft: 10,
+            width: '90%',
+          }}
+          placeholder="About"
+          placeholderTextColor={currentColors.textSecondary}
+          value={about}
+          onChangeText={setAbout}
+        />
+      </View>
+
+      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
+        <MaterialCommunityIcons name="phone" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
+        <TextInput
+          style={{
+            height: 40,
+            borderBottomWidth: 1,
+            borderBottomColor: currentColors.textSecondary,
+            marginBottom: 10,
+            color: currentColors.textPrimary,
+            
+            marginLeft: 10,
+            
+            width: '90%',
+          }}
+          placeholder="Phone Number"
+          placeholderTextColor={currentColors.textSecondary}
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+        />
+      </View>
+
+      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
+        <MaterialCommunityIcons name="email" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
+        <TextInput
+          style={{
+            height: 40,
+            borderBottomWidth: 1,
+            borderBottomColor: currentColors.textSecondary,
+            marginBottom: 10,
+            color: currentColors.textPrimary,
+            
+            marginLeft: 10,
+            
+            width: '90%',
+          }}
+          placeholder="Email"
+          placeholderTextColor={currentColors.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+      </View>
+
+      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
+        <MaterialCommunityIcons name="circle" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
+        <View style={{height: 40,borderBottomWidth: 1,borderBottomColor: currentColors.textSecondary,marginBottom: 10, marginHorizontal: 10,width: '70%', }}>
+          <Text style={{color: currentColors.textPrimary,}} >Satus</Text>
+          <Text style={{color: currentColors.textSecondary}}>{status}</Text>
         </View>
         
-        {/* About Section */}
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>
-          This is not your username or pin. This name will be visible to your contacts.
-        </Text>
+        <TouchableOpacity onPress={()=>setOpenStatus(true)}>
+          <MaterialCommunityIcons name="plus" size={34} color={currentColors.textSecondary} />
+        </TouchableOpacity>
+      </View>
+      <Status visible={openStatus} onClose={closeStatus} status={status} setStatus={setStatus} currentColors={currentColors}/>
 
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="information" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="About"
-            placeholderTextColor={currentColors.textSecondary}
-            value={about}
-            onChangeText={setAbout}
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>About</Text>
-
-        {/* Phone Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="phone" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Phone Number"
-            placeholderTextColor={currentColors.textSecondary}
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Phone</Text>
-
-        {/* Email Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="email" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Email"
-            placeholderTextColor={currentColors.textSecondary}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Email</Text>
-
-        {/* Skills Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="tools" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Skills"
-            placeholderTextColor={currentColors.textSecondary}
-            value={skills}
-            onChangeText={setSkills}
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Skills</Text>
-
-        {/* Projects Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="account-wrench" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Projects"
-            placeholderTextColor={currentColors.textSecondary}
-            value={projects}
-            onChangeText={setProjects}
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Projects</Text>
-
-        {/* Education Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="school" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Education"
-            placeholderTextColor={currentColors.textSecondary}
-            value={education}
-            onChangeText={setEducation}
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Education</Text>
-
-        {/* Experience Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="briefcase" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Experience"
-            placeholderTextColor={currentColors.textSecondary}
-            value={experience}
-            onChangeText={setExperience}
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Experience</Text>
-
-        {/* Services Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="account-cog" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Services"
-            placeholderTextColor={currentColors.textSecondary}
-            value={services}
-            onChangeText={setServices}
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Services</Text>
-
-        {/* Certificates Section */}
-        <View style={{ marginVertical: 10 }}>
-          <MaterialCommunityIcons name="certificate" size={34} color={currentColors.textSecondary} />
-          <TextInput
-            style={{
-              height: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              marginBottom: 10,
-              color: currentColors.textPrimary,
-              backgroundColor: currentColors.inputBackground,
-            }}
-            placeholder="Certificates"
-            placeholderTextColor={currentColors.textSecondary}
-            value={certificates}
-            onChangeText={setCertificates}
-          />
-        </View>
-
-        <Text style={{ marginBottom: 10, color: currentColors.textSecondary }}>Certificates</Text>
+        <JobInputs currentColors={currentColors} />
 
         <TouchableOpacity onPress={handleSave} style={{ alignSelf: 'flex-end', backgroundColor: currentColors.primary, padding: 10 }}>
           <Text style={{ color: currentColors.buttonText }}>Save</Text>
