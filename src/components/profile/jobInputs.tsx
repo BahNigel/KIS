@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Button, ScrollView } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Skills from "./inputs/skills"; // Assuming this is a component for skills form/modal
-import { renderSkillItem } from "./profileActions";
+import { handleRemoveProject, renderSkillItem } from "./profileActions";
+import Projects from "./inputs/projects";
+import { Project } from "../Messages/Chats/chatInterfaces";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const JobInputs = ({ currentColors }:{currentColors: any}) => {
-  const [projects, setProjects] = useState<any>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [education, setEducation] = useState<any>([]);
   const [experience, setExperience] = useState<any>([]);
   const [services, setServices] = useState<any>([]);
   const [skills, setSkills] = useState<any>([]);
   const [certificates, setCertificates] = useState<any>([]);
   const [startSelect, setStartSelect] = useState(false);
+  const [startSelectProject, setStartSelectProject] = useState(false);
 
   // Modal visibility states
   const [openSkills, setOpenSkills] = useState(false);
@@ -58,14 +62,7 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
                 {skills.map((item: any, index: any) => (
                 <View key={index} style={{ flexDirection: 'row', marginRight: 10 }}>
                     {/* Pass necessary props to renderSkillItem */}
-                    {renderSkillItem({
-                    item,
-                    index,
-                    currentColors,
-                    skills,
-                    setSkills,
-                    setStartSelect,
-                    })}
+                    {renderSkillItem(item,index,currentColors,skills,setSkills,setStartSelect)}
                 </View>
                 ))}
             </ScrollView>
@@ -79,21 +76,17 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
       {/* Projects Section */}
       <View style={{ marginVertical: 10, flexDirection: "row", alignItems: "center" }}>
         <MaterialCommunityIcons name="account-wrench" size={34} color={currentColors.textSecondary} />
-        <TextInput
-          style={{
-            height: 40,
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            marginBottom: 10,
-            color: currentColors.textPrimary,
-            marginLeft: 10,
-            flex: 1,
-          }}
-          placeholder="Projects"
-          placeholderTextColor={currentColors.textSecondary}
-          value={projects}
-          onChangeText={setProjects}
-        />
+        <View style={{maxHeight: 60, borderBottomWidth: 1, borderBottomColor: currentColors.textSecondary, marginBottom: 10,marginLeft: 10, flex: 1,}}>
+          {/* Display added projects */}
+          <Text style={{color: currentColors.textSecondary}}>Projects</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {projects.map((item, index) => (
+              <View key={index} style={{ flexDirection: 'row', marginVertical: 5 }}>
+                {renderSkillItem(item,index,currentColors,projects,setProjects, setStartSelectProject, )}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
         <TouchableOpacity onPress={() => setOpenProjects(true)}>
           <MaterialCommunityIcons name="plus" size={34} color={currentColors.textSecondary} />
         </TouchableOpacity>
@@ -192,7 +185,18 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
       </View>
 
         <Skills visible={openSkills} onClose={closeSkills} skills={skills} setSkills={setSkills} currentColors={currentColors} startSelect={startSelect} setStartSelect={setStartSelect}/>
-      
+        <Projects
+  visible={openProjects} 
+  onClose={closeProjects} 
+  skills={skills} 
+  setSkills={setSkills} 
+  projects={projects} 
+  setProjects={setProjects} 
+  currentColors={currentColors}  
+  startSelect={startSelectProject} 
+  setStartSelect={setStartSelectProject} 
+/>
+
     </View>
   );
 };

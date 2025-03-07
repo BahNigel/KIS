@@ -16,8 +16,8 @@ export default function Skills({
 }: {
   visible: boolean;
   onClose: () => void;
-  skills: { skill: string; percentage: string; type: string }[];
-  setSkills: (value: { skill: string; percentage: string; type: string }[]) => void;
+  skills: { name: string; percentage: string; type: string }[];
+  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
   currentColors: any;startSelect:boolean; setStartSelect: (value: boolean)=>void;
 }) {
   const [skillInput, setSkillInput] = useState('');
@@ -42,22 +42,29 @@ export default function Skills({
   ]);
 
   const handleAddSkill = () => {
-    if (
-      skillInput &&
-      percentageInput &&
-      !isNaN(Number(percentageInput)) &&
-      Number(percentageInput) >= 0 &&
-      Number(percentageInput) <= 100
-    ) {
-      const newSkill = { skill: skillInput, percentage: percentageInput, type: skillType };
-      const updatedSkills = [...skills, newSkill]; // Add new skill to the list
-      setStartSelect(true)
-      setSkills(updatedSkills);
-      setSkills(updatedSkills);
-      setSkillInput('');
-      setPercentageInput('');
+    if (!skillInput || !percentageInput) return;
+  
+    if (isNaN(Number(percentageInput)) || Number(percentageInput) < 0 || Number(percentageInput) > 100) {
+      return;
     }
+  
+    // Check if name already exists (case insensitive)
+    const skillExists = skills.some((item) => item.name.toLowerCase() === skillInput.toLowerCase());
+  
+    if (skillExists) {
+      alert("This name has already been added!"); // Optional: Replace with a better UI feedback mechanism
+      return;
+    }
+  
+    const newSkill = { name: skillInput, percentage: percentageInput, type: skillType };
+    const updatedSkills = [...skills, newSkill]; // Add new name to the list
+  
+    setStartSelect(true);
+    setSkills(updatedSkills);
+    setSkillInput('');
+    setPercentageInput('');
   };
+  
 
   
 
@@ -78,30 +85,19 @@ export default function Skills({
         
       }
     >
-    {startSelect && (
-        <>
-            {/* Skills List (Horizontal Scroll) */}
-            <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            style={{ borderBottomWidth: 1, borderBottomColor: currentColors.textSecondary, paddingBottom: 20, marginTop: 20 }}
-            >
-            {skills.map((item, index) => (
-                <View key={index} style={{ flexDirection: 'row', marginRight: 10 }}>
-                {/* Pass necessary props to renderSkillItem */}
-                {renderSkillItem({
-                    item,
-                    index,
-                    currentColors,
-                    skills,
-                    setSkills,
-                    setStartSelect
-                })}
-                </View>
-            ))}
-            </ScrollView>
-        </>
-        )}
+        {/* Skills List (Horizontal Scroll) */}
+        <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={{paddingBottom: 20, marginTop: 20 }}
+        >
+        {skills.map((item, index) => (
+            <View key={index} style={{ flexDirection: 'row', marginRight: 10 }}>
+            {/* Pass necessary props to renderSkillItem */}
+            {renderSkillItem(item,index,currentColors,skills,setSkills,setStartSelect)}
+            </View>
+        ))}
+        </ScrollView>
       <Text style={{ color: currentColors.textPrimary, fontWeight: 'bold', marginVertical: 20 }}>
         Enter Skills, Mastery Percentage, and Skill Type
       </Text>
@@ -110,7 +106,7 @@ export default function Skills({
       <TextInput
         value={skillInput}
         onChangeText={setSkillInput}
-        placeholder="Enter skill (e.g., JavaScript)"
+        placeholder="Enter name (e.g., JavaScript)"
         placeholderTextColor={currentColors.textSecondary}
         style={{
           padding: 10,

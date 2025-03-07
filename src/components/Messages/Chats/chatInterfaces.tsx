@@ -171,3 +171,52 @@ export interface ChatsSectionProps {
   setChatRoomVisible: (value: boolean) => void;
   handleScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 }
+
+export interface Skill {
+  name: string;
+  percentage: string;
+  type: string;
+}
+
+export interface ProjectsProps {
+  projects: Project[];
+  setProjects: (projects: Project[]) => void;
+  visible: boolean;
+  onClose: () => void;
+  skills: { name: string; percentage: string; type: string }[];
+  setSkills: (skills: { name: string; percentage: string; type: string }[]) => void;
+  currentColors: any;
+  startSelect: boolean;
+  setStartSelect: (value: boolean) => void;
+}
+
+
+export interface Project {
+  name: string;
+  description: string;
+  skills: { name: string; percentage: string; type: string }[];
+  mediaType: "link" | "file"; // 👈 Ensure this is restricted
+  media: string;
+  selectedSkills: string[];
+  isCurrent: boolean;
+  endDate: string;
+  selectedCompanies: [];
+  selectedContributors: [];
+  startDate: string;
+  files: File[];
+}
+
+
+
+export interface ProjectFormProps {
+  projectForm: Project;
+  setProjectForm: (form: Project) => void;
+  currentColors: any;
+  handleAddProject: () => void;
+  startSelect: boolean;
+  setStartSelect: (value: boolean) => void;
+  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
+  projects: Project[];
+  setProjects: (projects: Project[]) => void;
+}
+

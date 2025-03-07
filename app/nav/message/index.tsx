@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, useColorScheme, TextInput, TouchableOpacity, An
 import { Colors } from '@/constants/Colors';
 import Calls from '@/src/components/Messages/Calls/Calls';
 import Channels from '@/src/components/Messages/Channels/Channels';
-import Chats from '@/src/components/Messages/Chats/Chats';
+import Chats from '@/src/components/Messages/Chats';
 import Status from '@/src/components/Messages/Status/Status';
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesome } from '@expo/vector-icons';

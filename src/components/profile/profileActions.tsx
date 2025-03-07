@@ -2,7 +2,8 @@ import { API_BASE_URL } from '@/src/routes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { TouchableOpacity, View, Text, Alert } from 'react-native';
+import { Project } from '../Messages/Chats/chatInterfaces';
 
 export const encodeImageToBase64 = async (image: string | Blob): Promise<string> => {
   try {
@@ -105,7 +106,7 @@ export const saveProfileData = async (
 };
 
 const handleDeleteSkill = (index: number, skills: any[], setSkills: (value: any[]) => void, setStartSelect: (value: boolean) => void) => {
-  // Remove the skill at the given index
+  // Remove the name at the given index
   const updatedSkills = skills.filter((_: any, i: number) => i !== index);
 
   // Update the skills list in the parent component
@@ -117,21 +118,14 @@ const handleDeleteSkill = (index: number, skills: any[], setSkills: (value: any[
   }
 };
 
-export const renderSkillItem = ({ item, index, currentColors, skills, setSkills, setStartSelect }: { 
-  item: { skill: string; percentage: string; type: string }; 
-  index: number; 
-  currentColors: any;
-  skills: any[]; 
-  setSkills: (value: any[]) => void; 
-  setStartSelect: (value: boolean) => void; 
-}) => (
+export const renderSkillItem = (item: any, index: number, currentColors: any, skills:any[], setSkills:(value: any[]) => void, setStartSelect: (value: boolean) => void) => (
   <View style={{ height: 60 }}>
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
         padding: 4,
-        marginRight: 5,
+        marginRight: 10,
         borderRadius: 20,
         backgroundColor: currentColors.primary,
         marginBottom: 30,
@@ -139,9 +133,7 @@ export const renderSkillItem = ({ item, index, currentColors, skills, setSkills,
         position: 'relative', // Important for the positioning of the 'X' button
       }}
     >
-      <Text style={{ color: currentColors.buttonText, marginRight: 5 }}>{item.skill}:</Text>
-      <Text style={{ color: currentColors.buttonText }}>{item.percentage}%</Text>
-      <Text style={{ color: currentColors.buttonText }}>( {item.type} )</Text>
+      <Text style={{ color: currentColors.buttonText, marginRight: 5 }}>{item.name}</Text>
     </View>
 
     {/* 'X' Button for Deletion */}
@@ -163,3 +155,69 @@ export const renderSkillItem = ({ item, index, currentColors, skills, setSkills,
     </TouchableOpacity>
   </View>
 );
+
+
+export const handleAddProject = (
+  projectForm: Project,
+  selectedFiles: any,
+  lowerForm: any,
+  projects: any[],
+  setProjects: (projects: Project[]) => void,
+  setProjectForm: (arg0: Project) => void,
+  setSelectedFiles: (arg0: never[]) => void,
+  setLowerForm: (arg0: never[]) => void
+) => {
+  if (!projectForm.name || !projectForm.description || !projectForm.skills.length) {
+    Alert.alert('Error', 'Please fill all the required fields.');
+    return;
+  }
+
+  const newProject = {
+    ...projectForm,
+    files: selectedFiles,
+    ...lowerForm,
+  };
+
+  // Add the new project to the projects list
+  setProjects([...projects, newProject]);
+
+  // Log the projects list to console
+  console.log('Projects List:', [...projects, newProject]);
+
+  // Clear the form for the next project
+  setProjectForm({
+    name: '',
+    description: '',
+    skills: projectForm.skills,
+    mediaType: 'file',
+    media: projectForm.media,
+    selectedSkills: projectForm.selectedSkills,
+    isCurrent: projectForm.isCurrent,
+    endDate: projectForm.endDate,
+    selectedCompanies: projectForm.selectedCompanies,
+    selectedContributors: projectForm.selectedContributors,
+    startDate: projectForm.startDate,
+    files:[],
+  });
+
+  setSelectedFiles([]);
+  setLowerForm([]);
+};
+
+export const handleRemoveProject = (
+  index: number,
+  projects: Project[],
+  setProjects: (prevProjects: any) => void
+) => {
+  const updatedProjects: Project[] = projects.filter((_: any, i: number) => i !== index);
+  setProjects(updatedProjects);
+
+  console.log('Updated Projects List:', projects.filter((_: any, i: number) => i !== index));
+};
+
+
+// const handleRemoveProject = (index: number) => {
+//   const updatedProjects = projects.filter((_, i) => i !== index);
+//   setProjects(updatedProjects);
+//   console.log('Updated Projects List:', updatedProjects);
+// };
