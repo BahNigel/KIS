@@ -13,6 +13,7 @@ import { useNavigationState } from '@react-navigation/native';
 import { calculateUnreadCount } from '@/src/components/Messages/Chats/chatUtils';
 import { mockChats } from '@/src/components/Messages/mockChatsData';
 import useDynamicStyles from './indexStyles';
+import FilePickers from '@/models/FilePickers';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -22,6 +23,16 @@ export default function MessagePage() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   const styles = useDynamicStyles();
+
+  //for file picking only
+  const [modalVisible, setModalVisible] = useState(false);
+  const [buttonPosition, setButtonPosition] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
+  //end file picking only
 
   const [notifications, setNotifications] = useState({
     chats: 0,
@@ -132,9 +143,27 @@ export default function MessagePage() {
                   <TouchableOpacity style={styles.iconButton}>
                     <FontAwesome name="camera" size={15} color={currentColors.textPrimary} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconButton}>
+                  <TouchableOpacity
+                        onLayout={(event) =>
+                          setButtonPosition(event.nativeEvent.layout)
+                        }
+                        onPress={() => setModalVisible(!modalVisible)}
+                        style={{
+                          backgroundColor: "blue",
+                          padding: 15,
+                          borderRadius: 10,
+                        }}
+                      >
                     <FontAwesome name="bars" size={15} color={currentColors.textPrimary} />
+                    
                   </TouchableOpacity>
+                  {/* for file picking only */}
+                  <FilePickers
+                      visible={modalVisible}
+                      onClose={() => setModalVisible(false)}
+                      buttonPosition={buttonPosition}
+                    />
+                    {/* end for file picking only */}
                 </View>
               )}
               
@@ -207,6 +236,7 @@ export default function MessagePage() {
             }}
           />
         </Tab.Navigator>
+        
       </View>
     </>
   );
