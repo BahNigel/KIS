@@ -11,6 +11,8 @@ interface Props {
   startSelect: boolean;
   setStartSelect: (value: boolean)=>void;
   setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
+  setSelectEdit: (value: any[])=>void;
+  selectEdit: any[]; setOpenAnyModal: (value: string) => void;
 }
 
 export default function SkillsSelection({
@@ -21,6 +23,9 @@ export default function SkillsSelection({
   startSelect,
   setStartSelect,
   setSkills,
+  setSelectEdit, 
+  selectEdit,
+  setOpenAnyModal,
 }: Props) {
   const selectedSkillsSet = new Set(selectedSkills);
   const [openSkills, setOpenSkills] = useState(false);
@@ -131,7 +136,9 @@ export default function SkillsSelection({
           <Text style={{ color: currentColors.textSecondary }}>Add Skills</Text>
         </TouchableOpacity>
       )}
-      <Skills visible={openSkills} onClose={closeSkills} skills={skills} setSkills={setSkills} currentColors={currentColors} startSelect={startSelect} setStartSelect={setStartSelect}/>
+      <Skills visible={openSkills} onClose={closeSkills} skills={skills} setSkills={setSkills} currentColors={currentColors} startSelect={startSelect} setStartSelect={setStartSelect}
+      setSelectEdit={setSelectEdit} selectEdit={selectEdit} setOpenAnyModal={setOpenAnyModal}
+      />
     </>
   );
 }

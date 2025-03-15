@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, TouchableOpacity, ScrollView, TextInput, View, FlatList } from 'react-native';
 import ModalRightToLeft from '@/models/ModalRightToLeft';
 import { Picker } from '@react-native-picker/picker';
@@ -12,17 +12,26 @@ export default function Skills({
   setSkills,
   currentColors,
   startSelect,
-   setStartSelect,
+  setStartSelect,
+  setSelectEdit,
+  selectEdit,
+  setOpenAnyModal,
 }: {
   visible: boolean;
   onClose: () => void;
-  skills: { name: string; percentage: string; type: string }[];
-  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
-  currentColors: any;startSelect:boolean; setStartSelect: (value: boolean)=>void;
+  skills: { name: string; percentage: string; skillType: string, type: string }[];
+  selectEdit: any[]; // Can contain different objects, but only one skill object
+  setSkills: (value: { name: string; percentage: string; skillType: string, type: string }[]) => void;
+  currentColors: any;
+  startSelect: boolean;
+  setStartSelect: (value: boolean) => void;
+  setSelectEdit: (value: any[]) => void; setOpenAnyModal: (value: string) => void;
 }) {
   const [skillInput, setSkillInput] = useState('');
   const [percentageInput, setPercentageInput] = useState('');
   const [skillType, setSkillType] = useState('Technical Skills');
+  const [editingSkill, setEditingSkill] = useState<{ name: string; percentage: string; type: string } | null>(null);
+  
   const [suggestions] = useState([
     'JavaScript',
     'React',
@@ -41,32 +50,59 @@ export default function Skills({
     'C++',
   ]);
 
-  const handleAddSkill = () => {
+  // Detect if a skill is in selectEdit and pre-fill the form
+  useEffect(() => {
+    console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb: ", selectEdit)
+    const skillToEdit = selectEdit.find(item => item.name && item.percentage && item.type=='skill');
+    if (skillToEdit) {
+      setSkillInput(skillToEdit.name);
+      setPercentageInput(skillToEdit.percentage);
+      setSkillType(skillToEdit.type);
+      setEditingSkill(skillToEdit);
+    } else {
+      resetForm();
+    }
+  }, [selectEdit]);
+
+  // Reset form fields
+  const resetForm = () => {
+    setSkillInput('');
+    setPercentageInput('');
+    setSkillType('Technical Skills');
+    setEditingSkill(null);
+  };
+
+  const handleAddOrEditSkill = () => {
     if (!skillInput || !percentageInput) return;
-  
+
     if (isNaN(Number(percentageInput)) || Number(percentageInput) < 0 || Number(percentageInput) > 100) {
       return;
     }
-  
-    // Check if name already exists (case insensitive)
-    const skillExists = skills.some((item) => item.name.toLowerCase() === skillInput.toLowerCase());
-  
-    if (skillExists) {
-      alert("This name has already been added!"); // Optional: Replace with a better UI feedback mechanism
-      return;
-    }
-  
-    const newSkill = { name: skillInput, percentage: percentageInput, type: skillType };
-    const updatedSkills = [...skills, newSkill]; // Add new name to the list
-  
-    setStartSelect(true);
-    setSkills(updatedSkills);
-    setSkillInput('');
-    setPercentageInput('');
-  };
-  
 
-  
+    if (editingSkill) {
+      // Update skill
+      const updatedSkills = skills.map(skill =>
+        skill.name === editingSkill.name ? { name: skillInput, percentage: percentageInput, skillType: skillType, type: 'skill' } : skill
+      );
+
+      setSkills(updatedSkills);
+      setSelectEdit(selectEdit.filter(item => item !== editingSkill)); // Remove from edit list
+      resetForm();
+    } else {
+      // Check if skill already exists
+      const skillExists = skills.some(item => item.name.toLowerCase() === skillInput.toLowerCase());
+      if (skillExists) {
+        alert('This skill already exists!');
+        return;
+      }
+
+      // Add new skill
+      const newSkill = { name: skillInput, percentage: percentageInput, skillType: skillType, type: 'skill' };
+      setSkills([...skills, newSkill]);
+      setStartSelect(true);
+      resetForm();
+    }
+  };
 
   return (
     <ModalRightToLeft
@@ -74,30 +110,25 @@ export default function Skills({
       onClose={onClose}
       name="Edit Skills"
       headerContent={
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-            <Text style={{ color: currentColors.textPrimary, fontWeight: 'bold' }} onPress={onClose}>
-             Edit Skills
-            </Text>
-            <TouchableOpacity onPress={onClose}>
-                <Icon name='check' size={24} color={currentColors.primary}/>    
-            </TouchableOpacity>   
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ color: currentColors.textPrimary, fontWeight: 'bold' }} onPress={onClose}>
+            Edit Skills
+          </Text>
+          <TouchableOpacity onPress={onClose}>
+            <Icon name="check" size={24} color={currentColors.primary} />
+          </TouchableOpacity>
         </View>
-        
       }
     >
-        {/* Skills List (Horizontal Scroll) */}
-        <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        style={{paddingBottom: 20, marginTop: 20 }}
-        >
+      {/* Skills List */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingBottom: 20, marginTop: 20 }}>
         {skills.map((item, index) => (
-            <View key={index} style={{ flexDirection: 'row', marginRight: 10 }}>
-            {/* Pass necessary props to renderSkillItem */}
-            {renderSkillItem(item,index,currentColors,skills,setSkills,setStartSelect)}
-            </View>
+          <View key={index} style={{ flexDirection: 'row', marginRight: 10 }}>
+            {renderSkillItem(item, index, currentColors, skills, setSkills, setStartSelect, selectEdit, setSelectEdit, setOpenAnyModal)}
+          </View>
         ))}
-        </ScrollView>
+      </ScrollView>
+
       <Text style={{ color: currentColors.textPrimary, fontWeight: 'bold', marginVertical: 20 }}>
         Enter Skills, Mastery Percentage, and Skill Type
       </Text>
@@ -156,9 +187,9 @@ export default function Skills({
         <Picker.Item label="Other" value="Other" />
       </Picker>
 
-      {/* Add Skill Button */}
+      {/* Add/Edit Skill Button */}
       <TouchableOpacity
-        onPress={handleAddSkill}
+        onPress={handleAddOrEditSkill}
         style={{
           backgroundColor: currentColors.primary,
           padding: 10,
@@ -167,7 +198,9 @@ export default function Skills({
           marginBottom: 20,
         }}
       >
-        <Text style={{ color: currentColors.buttonText }}>Add Skill</Text>
+        <Text style={{ color: currentColors.buttonText }}>
+          {editingSkill ? 'Edit Skill' : 'Add Skill'}
+        </Text>
       </TouchableOpacity>
 
       {/* Suggested Skills */}
@@ -177,7 +210,7 @@ export default function Skills({
 
       <FlatList
         data={suggestions}
-        style={{marginVertical: 20,}}
+        style={{ marginVertical: 20 }}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => setSkillInput(item)}
@@ -191,7 +224,7 @@ export default function Skills({
           </TouchableOpacity>
         )}
         keyExtractor={(item, index) => index.toString()}
-        nestedScrollEnabled={true} // ✅ Important when nested inside another FlatList
+        nestedScrollEnabled={true}
       />
     </ModalRightToLeft>
   );

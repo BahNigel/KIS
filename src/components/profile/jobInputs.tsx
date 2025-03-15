@@ -16,6 +16,25 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
   const [certificates, setCertificates] = useState<any>([]);
   const [startSelect, setStartSelect] = useState(false);
   const [startSelectProject, setStartSelectProject] = useState(false);
+  const [selectEdit, setSelectEdit] = useState<any[]>([]);
+  const [openAnyModal, setOpenAnyModal] = useState('');
+
+  const [projectForm, setProjectForm] = useState<Project>({
+      id: 1,
+      name: '',
+      description: '',
+      skills: skills, // Set initial skills to the passed skills
+      selectedSkills: [],
+      mediaType: 'file',
+      media: '',
+      isCurrent: false,
+      endDate: '',
+      selectedCompanies: [],
+      selectedContributors: [],
+      startDate: '',
+      files: [],
+      type: 'project'
+    });
 
   // Modal visibility states
   const [openSkills, setOpenSkills] = useState(false);
@@ -25,9 +44,39 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
   const [openServices, setOpenServices] = useState(false);
   const [openCertificates, setOpenCertificates] = useState(false);
 
+  useEffect(()=>{
+    console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&: ", openProjects)
+  }, [openProjects])
+
+  useEffect(()=>{
+    if (selectEdit.length > 0) {
+      const projectToEdit = selectEdit.find(item => item.name && item.type=='project');
+      setProjectForm(projectToEdit);
+    }
+  }, [selectEdit])
+    
+
+  useEffect(()=>{
+    switch (openAnyModal) {
+      case 'skill':
+        if (!openSkills) {
+          setOpenSkills(true);
+        }
+        break;
+      case 'project':
+        if (!openProjects && selectEdit.some(item => item.type === "project")) { 
+          setOpenProjects(true);
+        }      
+        break;
+      default:
+        break;
+    }    
+  }, [selectEdit])
+
   // Function to close modals
   const closeSkills = () => setOpenSkills(false);
   const closeProjects = () => setOpenProjects(false);
+  const toggleProjects = (value: boolean) => setOpenProjects(value);
   const closeEducation = () => setOpenEducation(false);
   const closeExperience = () => setOpenExperience(false);
   const closeServices = () => setOpenServices(false);
@@ -62,7 +111,7 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
                 {skills.map((item: any, index: any) => (
                 <View key={index} style={{ flexDirection: 'row', marginRight: 10 }}>
                     {/* Pass necessary props to renderSkillItem */}
-                    {renderSkillItem(item,index,currentColors,skills,setSkills,setStartSelect)}
+                    {renderSkillItem(item,index,currentColors,skills,setSkills,setStartSelect, selectEdit, setSelectEdit, setOpenAnyModal)}
                 </View>
                 ))}
             </ScrollView>
@@ -82,7 +131,7 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {projects.map((item, index) => (
               <View key={index} style={{ flexDirection: 'row', marginVertical: 5 }}>
-                {renderSkillItem(item,index,currentColors,projects,setProjects, setStartSelectProject, )}
+                {renderSkillItem(item,index,currentColors,projects,setProjects, setStartSelectProject, selectEdit, setSelectEdit, setOpenAnyModal)}
               </View>
             ))}
           </ScrollView>
@@ -184,18 +233,20 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
         </TouchableOpacity>
       </View>
 
-        <Skills visible={openSkills} onClose={closeSkills} skills={skills} setSkills={setSkills} currentColors={currentColors} startSelect={startSelect} setStartSelect={setStartSelect}/>
+        <Skills visible={openSkills} onClose={closeSkills} skills={skills} setSkills={setSkills} currentColors={currentColors} startSelect={startSelect} setStartSelect={setStartSelect} setSelectEdit={setSelectEdit} selectEdit={selectEdit} setOpenAnyModal={setOpenAnyModal}/>
         <Projects
-  visible={openProjects} 
-  onClose={closeProjects} 
-  skills={skills} 
-  setSkills={setSkills} 
-  projects={projects} 
-  setProjects={setProjects} 
-  currentColors={currentColors}  
-  startSelect={startSelectProject} 
-  setStartSelect={setStartSelectProject} 
-/>
+          visible={openProjects} 
+          onClose={closeProjects} 
+          skills={skills} 
+          setSkills={setSkills} 
+          projects={projects} 
+          setProjects={setProjects} 
+          currentColors={currentColors}  
+          startSelect={startSelectProject} 
+          setStartSelect={setStartSelectProject} 
+          setSelectEdit={setSelectEdit} selectEdit={selectEdit} setOpenAnyModal={setOpenAnyModal}
+          projectForm={projectForm} setProjectForm={setProjectForm} toggleProjects={toggleProjects}
+        />
 
     </View>
   );

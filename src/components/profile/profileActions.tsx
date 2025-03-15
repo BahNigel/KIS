@@ -4,6 +4,8 @@ import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { Project } from '../Messages/Chats/chatInterfaces';
+import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 export const encodeImageToBase64 = async (image: string | Blob): Promise<string> => {
   try {
@@ -118,40 +120,76 @@ const handleDeleteSkill = (index: number, skills: any[], setSkills: (value: any[
   }
 };
 
-export const renderSkillItem = (item: any, index: number, currentColors: any, skills:any[], setSkills:(value: any[]) => void, setStartSelect: (value: boolean) => void) => (
+
+export const renderSkillItem = (
+  item: any,
+  index: number,
+  currentColors: any,
+  skills: any[],
+  setSkills: (value: any[]) => void,
+  setStartSelect: (value: boolean) => void,
+  selectEdit: any[],
+  setSelectEdit: (value: any) => void,
+  setOpenAnyModal: (value: string) => void
+) => (
   <View style={{ height: 60 }}>
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
         padding: 4,
-        marginRight: 10,
+        marginHorizontal: 10,
         borderRadius: 20,
         backgroundColor: currentColors.primary,
         marginBottom: 30,
         height: 30,
-        position: 'relative', // Important for the positioning of the 'X' button
+        justifyContent: 'center',
       }}
     >
-      <Text style={{ color: currentColors.buttonText, marginRight: 5 }}>{item.name}</Text>
+      <Text style={{ color: currentColors.buttonText }}>{item.name}</Text>
     </View>
 
-    {/* 'X' Button for Deletion */}
+    {/* Edit Button */}
     <TouchableOpacity
-      onPress={() => handleDeleteSkill(index, skills, setSkills, setStartSelect)}
+      onPress={() =>{ 
+        setOpenAnyModal(item.type)
+        setSelectEdit((prev: any[]) => {
+          const exists = prev.some((el) => el.type === item.type);
+          if (exists) return [...prev]; // Prevent duplicate types
+          return [...prev, item]; // Add only if type is unique
+        });
+      }}
       style={{
         position: 'absolute',
-        top: 0,
-        right: -7,
-        backgroundColor: 'red', // Red color for the delete button
+        top: 5,
+        left: 0,
+        backgroundColor: 'gray',
         borderRadius: 10,
-        width: 20,
-        height: 20,
+        width: 24,
+        height: 24,
         justifyContent: 'center',
         alignItems: 'center',
       }}
     >
-      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>X</Text>
+      <Feather name="edit-2" size={14} color="white" />
+    </TouchableOpacity>
+
+    {/* Close Button */}
+    <TouchableOpacity
+      onPress={() => handleDeleteSkill(index, skills, setSkills, setStartSelect)}
+      style={{
+        position: 'absolute',
+        top: 5,
+        right: 0,
+        backgroundColor: 'red',
+        borderRadius: 10,
+        width: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <Ionicons name="close-circle" size={25} color={currentColors.danger} />
     </TouchableOpacity>
   </View>
 );
@@ -159,9 +197,7 @@ export const renderSkillItem = (item: any, index: number, currentColors: any, sk
 
 export const handleAddProject = (
   projectForm: Project,
-  selectedFiles: any,
-  lowerForm: any,
-  projects: any[],
+  projects: Project[],
   setProjects: (projects: Project[]) => void,
   setProjectForm: (arg0: Project) => void,
   setSelectedFiles: (arg0: never[]) => void,
@@ -173,9 +209,20 @@ export const handleAddProject = (
   }
 
   const newProject = {
-    ...projectForm,
-    files: selectedFiles,
-    ...lowerForm,
+    id: Math.floor(Math.random() * 1000000),
+    name: projectForm.name,
+    description: projectForm.description,
+    skills: projectForm.skills,
+    mediaType: projectForm.mediaType,
+    media: projectForm.media,
+    selectedSkills: projectForm.selectedSkills, // ✅ Corrected reference
+    isCurrent: projectForm.isCurrent,
+    endDate: projectForm.endDate,
+    selectedCompanies: projectForm.selectedCompanies,
+    selectedContributors: projectForm.selectedContributors,
+    startDate: projectForm.startDate,
+    files: projectForm.files, 
+    type: projectForm.type,
   };
 
   // Add the new project to the projects list
@@ -186,23 +233,26 @@ export const handleAddProject = (
 
   // Clear the form for the next project
   setProjectForm({
+    id: Math.floor(Math.random() * 1000000),
     name: '',
     description: '',
     skills: projectForm.skills,
     mediaType: 'file',
     media: projectForm.media,
-    selectedSkills: projectForm.selectedSkills,
+    selectedSkills: projectForm.selectedSkills, // ✅ Corrected reference
     isCurrent: projectForm.isCurrent,
     endDate: projectForm.endDate,
     selectedCompanies: projectForm.selectedCompanies,
     selectedContributors: projectForm.selectedContributors,
     startDate: projectForm.startDate,
-    files:[],
+    files: [], // ✅ Clears files correctly
+    type: 'project',
   });
 
-  setSelectedFiles([]);
-  setLowerForm([]);
+  setSelectedFiles([]); // ✅ Clears selected files
+  setLowerForm([]); // ✅ Ensures lowerForm is reset
 };
+
 
 export const handleRemoveProject = (
   index: number,
@@ -216,8 +266,69 @@ export const handleRemoveProject = (
 };
 
 
-// const handleRemoveProject = (index: number) => {
-//   const updatedProjects = projects.filter((_, i) => i !== index);
-//   setProjects(updatedProjects);
-//   console.log('Updated Projects List:', updatedProjects);
-// };
+export const handleUpdateProject = (
+  projectForm: Project,
+  selectedFiles: { uri: string; name: string; mimeType: string }[],
+  lowerForm: string | any[],
+  projects: Project[],
+  setProjects: (projects: Project[]) => void,
+  setProjectForm: (form: Project) => void,
+  setSelectedFiles: (files: { uri: string; name: string; mimeType: string }[]) => void,
+  setLowerForm: (form: { endDate: string; isCurrent: boolean; selectedCompanies: []; selectedContributors: []; startDate: string }[]) => void,
+  setSelectEdit: (value: any[])=>void, selectEdit: any[], editingProject: any[], setClearForm: (value:boolean)=>void, toggleProjects: (value: boolean) => void,
+): void => {
+  try {
+    // Validate the data before update
+    if (!projectForm.name || !projectForm.description) {
+      Alert.alert('Missing Data', 'Please fill in all fields before updating the project.');
+      return;
+    }
+
+    if (lowerForm.length === 0) {
+      Alert.alert('Missing Date', 'Please provide the start and end date for the project.');
+      return;
+    }
+
+    console.log("7777777777777777777777777777777777777777777777777777777777777777777777777777: ", lowerForm)
+
+    const updatedProject: Project = {
+      ...projectForm,
+      files: selectedFiles as any[], // Assuming the files are of type File[]
+      endDate: lowerForm[0].endDate,
+      isCurrent: lowerForm[0].isCurrent,
+      selectedCompanies: lowerForm[0].selectedCompanies,
+      selectedContributors: lowerForm[0].selectedContributors,
+      startDate: lowerForm[0].startDate
+    };
+
+    // Find the project being updated
+    const projectIndex = projects.findIndex(project => project.id === projectForm.id);
+    if (projectIndex === -1) {
+      Alert.alert('Project Not Found', 'The project you are trying to update does not exist.');
+      return;
+    }
+
+    
+    console.log("000000000000000000000000000000000000000000000000000000000000000000000000: ", projectIndex)
+
+    // Update the project in the projects array
+    const updatedProjects: Project[] = [...projects];
+    updatedProjects[projectIndex] = updatedProject;
+
+    // Update the state with the new list of projects
+    setProjects(updatedProjects);
+
+    // Reset the form and files
+    setProjectForm({ ...projectForm, name: '', description: '', media: '', skills: [], selectedSkills: [] });
+    setSelectedFiles([]);
+    setLowerForm([{ endDate: '', isCurrent: false, selectedCompanies: [], selectedContributors: [], startDate: '' }]);
+    setSelectEdit(selectEdit.filter(item => item !== editingProject)); // Remove from edit list
+
+    setClearForm(true)
+    toggleProjects(false)
+    Alert.alert('Success', 'Project updated successfully!');
+  } catch (error) {
+    console.error('Error updating project:', error);
+    Alert.alert('Error', 'There was an issue updating the project. Please try again.');
+  }
+};

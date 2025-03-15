@@ -175,7 +175,8 @@ export interface ChatsSectionProps {
 export interface Skill {
   name: string;
   percentage: string;
-  type: string;
+  skillType: string;
+  type:string,
 }
 
 export interface ProjectsProps {
@@ -192,9 +193,10 @@ export interface ProjectsProps {
 
 
 export interface Project {
+  id: number,
   name: string;
   description: string;
-  skills: { name: string; percentage: string; type: string }[];
+  skills: { name: string; percentage: string; skillType: string; type: string }[];
   mediaType: "link" | "file"; // 👈 Ensure this is restricted
   media: string;
   selectedSkills: string[];
@@ -203,7 +205,8 @@ export interface Project {
   selectedCompanies: [];
   selectedContributors: [];
   startDate: string;
-  files: File[];
+  files: { uri: string; name: string; mimeType: string }[];
+  type: string;
 }
 
 
@@ -218,5 +221,7 @@ export interface ProjectFormProps {
   setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
   projects: Project[];
   setProjects: (projects: Project[]) => void;
+  setSelectEdit: (value: any[])=>void;toggleProjects:(value: boolean)=>void;
+  selectEdit: any[]; setOpenAnyModal: (value: string) => void; clearForm: boolean;setClearForm:(value: boolean)=>void;
 }
 

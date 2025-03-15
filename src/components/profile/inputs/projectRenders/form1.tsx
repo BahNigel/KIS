@@ -15,9 +15,29 @@ import { Colors } from '@/constants/Colors';
 const dummyCompanies = ['Google', 'Microsoft', 'Amazon', 'Tesla', 'OpenAI'];
 const dummyContributors = ['John Doe', 'Jane Smith', 'Elon Musk', 'Mark Zuckerberg', 'Sundar Pichai'];
 
-export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lowerForm: any, setLowerForm: (value: any) => void }) {
+export default function ContinueProjectForm({ lowerForm, setLowerForm, setSelectEdit, selectEdit, clearForm }: { 
+  lowerForm: any; 
+  setLowerForm: (value: any) => void; 
+  setSelectEdit: (value: any[]) => void; 
+  selectEdit: any[]; clearForm: boolean;
+}) {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
+
+
+   useEffect(() =>{
+      if(clearForm){
+        setStartDate('');
+        setEndDate('');
+        setIsCurrent(false);
+        setSelectedCompanies([]);
+        setSelectedContributors([]);
+        setCompanyInput('');
+        setFilteredCompanies([]);
+        setContributorInput('');
+        setFilteredContributors([]);
+      }
+    },[clearForm])
 
   const [startDate, setStartDate] = useState(lowerForm?.startDate || '');
   const [endDate, setEndDate] = useState(lowerForm?.endDate || '');
@@ -31,21 +51,32 @@ export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lower
   const [contributorInput, setContributorInput] = useState('');
   const [filteredContributors, setFilteredContributors] = useState<string[]>([]);
 
+  // Populate fields when editing
   useEffect(() => {
-    setLowerForm({
+    if (selectEdit.length > 0) {
+      const project = selectEdit[0]; // Assuming single edit at a time
+      setStartDate(project.startDate || '');
+      setEndDate(project.endDate || '');
+      setIsCurrent(project.isCurrent || false);
+      setSelectedCompanies(project.selectedCompanies || []);
+      setSelectedContributors(project.selectedContributors || []);
+    }
+  }, [selectEdit]);
+
+  useEffect(() => {
+    setLowerForm([{
       startDate,
       endDate,
       isCurrent,
       selectedCompanies,
       selectedContributors,
-    });
+    }]);
   }, [startDate, endDate, isCurrent, selectedCompanies, selectedContributors]);
 
   const handleDateInput = (text: string, type: 'start' | 'end') => {
-    // Format the date as YYYY-MM-DD
-    const formattedDate = text.replace(/[^0-9]/g, '').slice(0, 8); // Only take the first 8 digits
+    const formattedDate = text.replace(/[^0-9]/g, '').slice(0, 8);
     const formattedText = formattedDate.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
-    
+
     if (type === 'start') {
       setStartDate(formattedText);
     } else {
@@ -55,44 +86,12 @@ export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lower
 
   const handleCompanySearch = (text: string) => {
     setCompanyInput(text);
-    setFilteredCompanies(
-      text.length > 0 ? dummyCompanies.filter(c => c.toLowerCase().includes(text.toLowerCase())) : []
-    );
-  };
-
-  const addCompany = (company: string) => {
-    if (company && !selectedCompanies.includes(company)) {
-      const updatedCompanies = [...selectedCompanies, company];
-      setSelectedCompanies(updatedCompanies);
-    }
-    setCompanyInput('');
-    setFilteredCompanies([]);
-  };
-
-  const removeCompany = (company: string) => {
-    const updatedCompanies = selectedCompanies.filter(c => c !== company);
-    setSelectedCompanies(updatedCompanies);
+    setFilteredCompanies(text.length > 0 ? dummyCompanies.filter(c => c.toLowerCase().includes(text.toLowerCase())) : []);
   };
 
   const handleContributorSearch = (text: string) => {
     setContributorInput(text);
-    setFilteredContributors(
-      text.length > 0 ? dummyContributors.filter(c => c.toLowerCase().includes(text.toLowerCase())) : []
-    );
-  };
-
-  const addContributor = (contributor: string) => {
-    if (contributor && !selectedContributors.includes(contributor)) {
-      const updatedContributors = [...selectedContributors, contributor];
-      setSelectedContributors(updatedContributors);
-    }
-    setContributorInput('');
-    setFilteredContributors([]);
-  };
-
-  const removeContributor = (contributor: string) => {
-    const updatedContributors = selectedContributors.filter(c => c !== contributor);
-    setSelectedContributors(updatedContributors);
+    setFilteredContributors(text.length > 0 ? dummyContributors.filter(c => c.toLowerCase().includes(text.toLowerCase())) : []);
   };
 
   return (
@@ -128,6 +127,7 @@ export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lower
         <Switch value={isCurrent} onValueChange={setIsCurrent} />
       </View>
 
+      {/* Company Selection */}
       <Text style={[styles.label, { color: theme.textSecondary }]}>Company</Text>
       <TextInput
         placeholder="Search or add company"
@@ -140,14 +140,14 @@ export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lower
       {filteredCompanies.length > 0 && (
         <ScrollView style={styles.listContainer}>
           {filteredCompanies.map((item) => (
-            <TouchableOpacity key={item} onPress={() => addCompany(item)} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
+            <TouchableOpacity key={item} onPress={() => setSelectedCompanies([...selectedCompanies, item])} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
               <Text style={{ color: theme.text }}>{item}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       )}
 
-      <TouchableOpacity onPress={() => addCompany(companyInput)} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
+      <TouchableOpacity onPress={() => setSelectedCompanies([...selectedCompanies, companyInput])} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
         <Text style={{ color: theme.text }}>Add "{companyInput}"</Text>
       </TouchableOpacity>
 
@@ -155,13 +155,14 @@ export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lower
         {selectedCompanies.map((company) => (
           <View key={company} style={[styles.tag, { backgroundColor: theme.buttonSecondary }]}>
             <Text style={{ color: theme.text }}>{company}</Text>
-            <TouchableOpacity onPress={() => removeCompany(company)}>
+            <TouchableOpacity onPress={() => setSelectedCompanies(selectedCompanies.filter(c => c !== company))}>
               <Ionicons name="close-circle" size={18} color={theme.coloredText} />
             </TouchableOpacity>
           </View>
         ))}
       </View>
 
+      {/* Contributor Selection */}
       <Text style={[styles.label, { color: theme.textSecondary }]}>Contributors</Text>
       <TextInput
         placeholder="Search or add contributor"
@@ -174,14 +175,14 @@ export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lower
       {filteredContributors.length > 0 && (
         <ScrollView style={styles.listContainer}>
           {filteredContributors.map((item) => (
-            <TouchableOpacity key={item} onPress={() => addContributor(item)} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
+            <TouchableOpacity key={item} onPress={() => setSelectedContributors([...selectedContributors, item])} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
               <Text style={{ color: theme.text }}>{item}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       )}
 
-      <TouchableOpacity onPress={() => addContributor(contributorInput)} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
+      <TouchableOpacity onPress={() => setSelectedContributors([...selectedContributors, contributorInput])} style={[styles.suggestion, { backgroundColor: theme.buttonBackground }]}>
         <Text style={{ color: theme.text }}>Add "{contributorInput}"</Text>
       </TouchableOpacity>
 
@@ -189,7 +190,7 @@ export default function ContinueProjectForm({ lowerForm, setLowerForm }: { lower
         {selectedContributors.map((contributor) => (
           <View key={contributor} style={[styles.tag, { backgroundColor: theme.buttonSecondary }]}>
             <Text style={{ color: theme.text }}>{contributor}</Text>
-            <TouchableOpacity onPress={() => removeContributor(contributor)}>
+            <TouchableOpacity onPress={() => setSelectedContributors(selectedContributors.filter(c => c !== contributor))}>
               <Ionicons name="close-circle" size={18} color={theme.coloredText} />
             </TouchableOpacity>
           </View>

@@ -23,40 +23,35 @@ export default function Projects({
   currentColors,
   startSelect,
   setStartSelect,
+  setSelectEdit,
+  selectEdit,
+  setOpenAnyModal, projectForm, setProjectForm, toggleProjects,
 }: {
   visible: boolean;
-  onClose: () => void;
-  skills: { name: string; percentage: string; type: string }[];
+  onClose: () => void;selectEdit: any[];
+  skills: { name: string; percentage: string; skillType: string ; type: string}[];
   setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
   projects: Project[];
   setProjects: (value: Project[]) => void;
   currentColors: any;
   startSelect: boolean;
-  setStartSelect: (value: boolean) => void;
+  projectForm: Project; toggleProjects: (value: boolean) => void;
+  setProjectForm: (form: any) => void;
+  setStartSelect: (value: boolean) => void;setSelectEdit: (value: any[])=>void; setOpenAnyModal: (value: string) =>void;
 }) {
-  const [projectForm, setProjectForm] = useState<Project>({
-    name: '',
-    description: '',
-    skills: skills, // Set initial skills to the passed skills
-    selectedSkills: [],
-    mediaType: 'file',
-    media: '',
-    isCurrent: false,
-    endDate: '',
-    selectedCompanies: [],
-    selectedContributors: [],
-    startDate: '',
-    files: []
-  });
+  
+  const [clearForm, setClearForm] = useState(false)
     useEffect(() => {
-      setProjectForm((prevData) => {
+      setProjectForm((prevData: any) => {
         return { ...prevData, skills: skills };
       });
     }, [skills]);
 
     useEffect(()=>{
-      console.log("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyggggggggggggggggggggggggggggggg: ", projectForm)
-    }, [projectForm])
+      if(visible){
+        setClearForm(false)
+      }
+    }, [visible])
     
  
   const handleAddProject = () => {
@@ -68,6 +63,7 @@ export default function Projects({
 
   const resetForm = () => {
     setProjectForm({
+      id: 1, 
       name: '',
       description: '',
       skills: skills, // Reset skills to the passed skills
@@ -80,6 +76,7 @@ export default function Projects({
       selectedContributors: [],
       startDate: '',
       files: [],
+      type: 'project',
     });
   };
 
@@ -87,6 +84,12 @@ export default function Projects({
     const updatedProjects = projects.filter((_, i) => i !== index);
     setProjects(updatedProjects);
   };
+
+  const submit = () => {
+    setClearForm(true);
+    onClose();
+  };
+  
 
   return (
     <ModalRightToLeft
@@ -98,7 +101,7 @@ export default function Projects({
           <Text style={{ color: currentColors.textPrimary, fontWeight: 'bold' }} onPress={onClose}>
             Edit Projects
           </Text>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity onPress={submit}>
             <Icon name="check" size={24} color={currentColors.primary} />
           </TouchableOpacity>
         </View>
@@ -138,9 +141,12 @@ export default function Projects({
           setSkills={setSkills}
           projects={projects}
           setProjects={setProjects}
+          setSelectEdit={setSelectEdit}
+          selectEdit={selectEdit} setOpenAnyModal={setOpenAnyModal}
+          clearForm={clearForm}
+          setClearForm={setClearForm} toggleProjects={toggleProjects}
         />
       </View>
-      
     </ModalRightToLeft>
   );
 }

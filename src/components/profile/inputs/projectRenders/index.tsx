@@ -4,27 +4,85 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { ProjectFormProps } from '../../../Messages/Chats/chatInterfaces';
 import SkillsSelection from '../skillsRenders';
-import ContinueProjectForm from './continueProjectForm';
-import { handleAddProject, renderSkillItem } from '../../profileActions';
+import ContinueProjectForm from './form1';
+import { handleAddProject, handleUpdateProject, renderSkillItem } from '../../profileActions';
 
-export default function ProjectForm({ projectForm, setProjectForm, currentColors, startSelect, setStartSelect, setSkills, projects, setProjects }: ProjectFormProps) {
-  const [selectedFiles, setSelectedFiles] = useState<{ uri: string; name: string; mimeType: string }[]>([]);
-  const [lowerForm, setLowerForm] = useState<{ endDate: string; isCurrent: Boolean; selectedCompanies: []; selectedContributors: []; startDate: string }[]>([]);
+export default function ProjectForm({
+  projectForm,
+  setProjectForm,
+  currentColors,
+  startSelect,
+  setStartSelect,
+  setSkills,
+  projects,
+  setProjects,
+  setSelectEdit,
+  selectEdit,
+  setOpenAnyModal,
+  clearForm,
+  setClearForm, toggleProjects
+}: ProjectFormProps) {
+  const [lowerForm, setLowerForm] = useState<{ endDate: string; isCurrent: boolean; selectedCompanies: []; selectedContributors: []; startDate: string }[]>([]);
+  const [mediaLink, setMediaLink] = useState<string>('');
+  const [editingProject, setEditingProject] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [mediaType, setMediaType] = useState(projectForm?.mediaType || 'file');
+  const [media, setMedia] = useState(projectForm?.media || '');
+  const [selectedFiles, setSelectedFiles] = useState<{ uri: string; name: string; mimeType: string }[]>(projectForm?.files || []);
 
+  
 
-  // Log `lowerForm` data whenever it changes
+  // Load data if editing a project
   useEffect(() => {
-    console.log('Lower Form Data:', lowerForm);
-    console.log('project Form Data: ', projectForm);
-    console.log('projects wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww: ', projects);
-    setProjectForm({ ...projectForm, ...lowerForm });
+    if (selectEdit.length > 0) {
+      const projectToEdit = selectEdit.find(item => item.name && item.type=='project');
+      setEditingProject(projectToEdit)
+      setMediaType(projectToEdit.mediaType)
+      setProjectForm(projectToEdit);
+      setMedia(projectToEdit.media)
+      setMediaLink(media)
+      setLowerForm([{ endDate: projectToEdit.endDate, isCurrent: projectToEdit.isCurrent, selectedCompanies: projectToEdit.selectedCompanies, selectedContributors: projectToEdit.selectedContributors, startDate: projectToEdit.startDate }])
+      
+    }
+    setRefreshKey(prevKey => prevKey + 1);
+    console.log("=================================================================================: ", selectEdit)
+  }, [selectEdit]);
+
+  useEffect(() => {
+    setProjectForm({
+      ...projectForm,
+      ...(Array.isArray(lowerForm) ? lowerForm[0] : lowerForm),
+    });
+    
   }, [lowerForm, projects]);
+
+  useEffect(() =>{
+    if(clearForm){
+      setLowerForm([]);
+      setProjectForm(
+        { id: 1, 
+        name: '',
+        description: '',
+        skills: [], // Reset skills to the passed skills
+        selectedSkills: [],
+        mediaType: 'file',
+        media: '',
+        isCurrent: false,
+        endDate: '',
+        selectedCompanies: [],
+        selectedContributors: [],
+        startDate: '',
+        files: [],
+        type: 'project',}
+      )
+    }
+  },[clearForm])
 
   const handleFilePicker = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        multiple: true,
+        multiple: true
       });
 
       if (result.canceled) {
@@ -37,7 +95,7 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
         .map((file) => ({
           uri: file.uri,
           name: file.name,
-          mimeType: file.mimeType || '',
+          mimeType: file.mimeType || ''
         }));
 
       if (newFiles.length === 0) {
@@ -60,6 +118,14 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
     setProjectForm({ ...projectForm, media: updatedFiles.map((file) => file.name).join(', ') });
   };
 
+  const handleMediaTypeChange = (type: 'link' | 'file') => {
+    setMediaType(type);
+    setProjectForm({ ...projectForm, media: '', mediaType: type });
+    if (type === 'link') {
+      setMediaLink('');
+    }
+  };
+
   const getFileIcon = (mimeType: string) => {
     if (mimeType.includes('image')) {
       return <Ionicons name="image" size={30} color={currentColors.textPrimary} />;
@@ -72,16 +138,16 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
   };
 
   return (
-    <View>
+    <View key={refreshKey}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Display added projects */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {projects.map((project, index) => (
-          <View key={index} style={{ flexDirection: 'row', marginVertical: 5 }}>
-             {renderSkillItem(project,index,currentColors,projects,setProjects, setStartSelect, )}
-          </View>
-        ))}
-      </ScrollView>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {projects.map((project, index) => (
+            <View key={index} style={{ flexDirection: 'row', marginVertical: 5 }}>
+              {renderSkillItem(project, index, currentColors, projects, setProjects, setStartSelect, selectEdit, setSelectEdit, setOpenAnyModal)}
+            </View>
+          ))}
+        </ScrollView>
+
         <TextInput
           placeholder="Project Name"
           placeholderTextColor={currentColors.textSecondary}
@@ -91,7 +157,7 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
             borderBottomWidth: 1,
             borderBottomColor: currentColors.textSecondary,
             color: currentColors.textPrimary,
-            marginBottom: 10,
+            marginBottom: 10
           }}
         />
 
@@ -105,7 +171,7 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
             borderBottomWidth: 1,
             borderBottomColor: currentColors.textSecondary,
             color: currentColors.textPrimary,
-            marginBottom: 10,
+            marginBottom: 10
           }}
         />
 
@@ -117,63 +183,59 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
           startSelect={startSelect}
           setStartSelect={setStartSelect}
           setSkills={setSkills}
+          setSelectEdit={setSelectEdit}
+          selectEdit={selectEdit}
+          setOpenAnyModal={setOpenAnyModal}
         />
 
-        {/* Media Type Selection */}
-        <Text style={{ marginVertical: 5, color: currentColors.textSecondary }}>Media</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+        <Text style={{ marginVertical: 5, color: currentColors.textSecondary }}>Media Type</Text>
+        <View style={{ flexDirection: 'row', marginBottom: 10 }}>
           <TouchableOpacity
-            onPress={() => {
-              setSelectedFiles([]);
-              setProjectForm({ ...projectForm, mediaType: 'link', media: '' });
-            }}
+            onPress={() => handleMediaTypeChange('link')}
             style={{
-              flexDirection: 'row',
-              backgroundColor: projectForm.mediaType === 'link' ? currentColors.primary : currentColors.card,
-              padding: 8,
-              borderRadius: 8,
+              backgroundColor: mediaType === 'link' ? currentColors.primary : currentColors.card,
+              padding: 12,
+              borderRadius: 5,
               marginRight: 10,
-              alignItems: 'center',
+              flex: 1,
+              alignItems: 'center'
             }}
           >
-            <Ionicons name="link" size={20} color={projectForm.mediaType === 'link' ? 'white' : currentColors.textPrimary} />
-            <Text style={{ color: projectForm.mediaType === 'link' ? 'white' : currentColors.textPrimary, marginLeft: 5 }}>Link</Text>
+            <Text style={{ color: mediaType === 'link' ? 'white' : currentColors.textPrimary }}>Link</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            onPress={() => setProjectForm({ ...projectForm, mediaType: 'file', media: '' })}
+            onPress={() => handleMediaTypeChange('file')}
             style={{
-              flexDirection: 'row',
-              backgroundColor: projectForm.mediaType === 'file' ? currentColors.primary : currentColors.card,
-              padding: 8,
-              borderRadius: 8,
-              alignItems: 'center',
+              backgroundColor: mediaType === 'file' ? currentColors.primary : currentColors.card,
+              padding: 12,
+              borderRadius: 5,
+              flex: 1,
+              alignItems: 'center'
             }}
           >
-            <Ionicons name="document" size={20} color={projectForm.mediaType === 'file' ? 'white' : currentColors.textPrimary} />
-            <Text style={{ color: projectForm.mediaType === 'file' ? 'white' : currentColors.textPrimary, marginLeft: 5 }}>File</Text>
+            <Text style={{ color: mediaType === 'file' ? 'white' : currentColors.textPrimary }}>File</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Link Input */}
-        {projectForm.mediaType === 'link' && (
+        {mediaType === 'link' && (
           <TextInput
-            placeholder="Enter Link"
+            placeholder="Enter Media Link"
             placeholderTextColor={currentColors.textSecondary}
-            value={projectForm.media}
-            onChangeText={(text) => setProjectForm({ ...projectForm, media: text })}
+            value={mediaLink}
+            onChangeText={(text) => {
+              setMediaLink(text);
+              setProjectForm({ ...projectForm, media: text });
+            }}
             style={{
               borderBottomWidth: 1,
               borderBottomColor: currentColors.textSecondary,
               color: currentColors.textPrimary,
-              marginBottom: 10,
-              padding: 8,
+              marginBottom: 10
             }}
           />
         )}
 
-        {/* File Input */}
-        {projectForm.mediaType === 'file' && (
+        {mediaType === 'file' && (
           <>
             <TouchableOpacity
               onPress={handleFilePicker}
@@ -182,13 +244,14 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
                 padding: 12,
                 borderRadius: 5,
                 marginBottom: 10,
-                alignItems: 'center',
+                alignItems: 'center'
               }}
             >
-              <Text style={{ color: 'white' }}>{selectedFiles.length > 0 ? `${selectedFiles.length} File(s) Selected` : 'Select Files'}</Text>
+              <Text style={{ color: 'white' }}>
+                {selectedFiles.length > 0 ? `${selectedFiles.length} File(s) Selected` : 'Select Files'}
+              </Text>
             </TouchableOpacity>
 
-            {/* Display selected files */}
             <View style={{ backgroundColor: currentColors.card, padding: 10, borderRadius: 5 }}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {selectedFiles.map((file, index) => (
@@ -207,19 +270,19 @@ export default function ProjectForm({ projectForm, setProjectForm, currentColors
           </>
         )}
 
-        <ContinueProjectForm lowerForm={lowerForm} setLowerForm={setLowerForm} />
+        <ContinueProjectForm lowerForm={lowerForm} setLowerForm={setLowerForm} setSelectEdit={setSelectEdit} selectEdit={selectEdit} clearForm={clearForm} />
 
-        <TouchableOpacity onPress={()=>handleAddProject(
-          projectForm,
-            selectedFiles,
-            lowerForm,
-            projects,
-            setProjects,
-            setProjectForm,
-            setSelectedFiles,
-            setLowerForm
-        )} style={{ backgroundColor: currentColors.primary, padding: 12, borderRadius: 5, alignItems: 'center', marginTop: 10 }}>
-          <Text style={{ color: 'white' }}>Add Project</Text>
+        <TouchableOpacity
+          onPress={() => {
+            if (selectEdit.length > 0) {
+              handleUpdateProject(projectForm, selectedFiles, lowerForm, projects, setProjects, setProjectForm, setSelectedFiles, setLowerForm, setSelectEdit, selectEdit, editingProject, setClearForm, toggleProjects);
+            } else {
+              handleAddProject(projectForm,  projects, setProjects, setProjectForm, setSelectedFiles, setLowerForm);
+            }
+          }}
+          style={{ backgroundColor: currentColors.primary, padding: 12, borderRadius: 5, alignItems: 'center', marginTop: 10 }}
+        >
+          <Text style={{ color: 'white' }}>{selectEdit.length > 0 ? 'Update Project' : 'Add Project'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
