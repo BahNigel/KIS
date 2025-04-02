@@ -4,10 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { ProjectFormProps } from '../../../Messages/Chats/chatInterfaces';
 import SkillsSelection from '../skillsRenders';
-import ContinueProjectForm from './form1';
+import Form from './form';
 import { handleAddProject, handleUpdateProject, renderSkillItem } from '../../profileActions';
+import handleFilePicker, { getFileIcon, handleMediaTypeChange, handleRemoveFile } from './action';
 
-export default function ProjectForm({
+export default function index({
+  skills,
   projectForm,
   setProjectForm,
   currentColors,
@@ -23,7 +25,7 @@ export default function ProjectForm({
   setClearForm, toggleProjects
 }: ProjectFormProps) {
   const [lowerForm, setLowerForm] = useState<{ endDate: string; isCurrent: boolean; selectedCompanies: []; selectedContributors: []; startDate: string }[]>([]);
-  const [mediaLink, setMediaLink] = useState<string>('');
+  const [mediaLink, setMediaLink] = useState<any>('');
   const [editingProject, setEditingProject] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [mediaType, setMediaType] = useState(projectForm?.mediaType || 'file');
@@ -40,12 +42,12 @@ export default function ProjectForm({
       setMediaType(projectToEdit.mediaType)
       setProjectForm(projectToEdit);
       setMedia(projectToEdit.media)
+      setSelectedFiles(projectToEdit.media)
       setMediaLink(media)
       setLowerForm([{ endDate: projectToEdit.endDate, isCurrent: projectToEdit.isCurrent, selectedCompanies: projectToEdit.selectedCompanies, selectedContributors: projectToEdit.selectedContributors, startDate: projectToEdit.startDate }])
-      
     }
     setRefreshKey(prevKey => prevKey + 1);
-    console.log("=================================================================================: ", selectEdit)
+    
   }, [selectEdit]);
 
   useEffect(() => {
@@ -78,64 +80,7 @@ export default function ProjectForm({
     }
   },[clearForm])
 
-  const handleFilePicker = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        multiple: true
-      });
-
-      if (result.canceled) {
-        Alert.alert('File Picker', 'No file selected or file picker was canceled.');
-        return;
-      }
-
-      const newFiles = result.assets
-        .filter((file) => !selectedFiles.some((existingFile) => existingFile.name === file.name))
-        .map((file) => ({
-          uri: file.uri,
-          name: file.name,
-          mimeType: file.mimeType || ''
-        }));
-
-      if (newFiles.length === 0) {
-        Alert.alert('Duplicate File', 'Some files were not added because they have the same name as already selected files.');
-        return;
-      }
-
-      const updatedFiles = [...selectedFiles, ...newFiles];
-      setSelectedFiles(updatedFiles);
-      setProjectForm({ ...projectForm, media: updatedFiles.map((file) => file.name).join(', ') });
-    } catch (error) {
-      console.error('Error picking files:', error);
-      Alert.alert('Error', 'There was an issue selecting files. Please try again.');
-    }
-  };
-
-  const handleRemoveFile = (uri: string) => {
-    const updatedFiles = selectedFiles.filter((file) => file.uri !== uri);
-    setSelectedFiles(updatedFiles);
-    setProjectForm({ ...projectForm, media: updatedFiles.map((file) => file.name).join(', ') });
-  };
-
-  const handleMediaTypeChange = (type: 'link' | 'file') => {
-    setMediaType(type);
-    setProjectForm({ ...projectForm, media: '', mediaType: type });
-    if (type === 'link') {
-      setMediaLink('');
-    }
-  };
-
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.includes('image')) {
-      return <Ionicons name="image" size={30} color={currentColors.textPrimary} />;
-    } else if (mimeType.includes('pdf')) {
-      return <Ionicons name="document-text" size={30} color="red" />;
-    } else if (mimeType.includes('msword') || mimeType.includes('wordprocessingml')) {
-      return <Ionicons name="document" size={30} color="blue" />;
-    }
-    return <Ionicons name="document" size={30} color={currentColors.textPrimary} />;
-  };
+  
 
   return (
     <View key={refreshKey}>
@@ -176,7 +121,7 @@ export default function ProjectForm({
         />
 
         <SkillsSelection
-          skills={projectForm.skills}
+          skills={skills}
           selectedSkills={projectForm.selectedSkills}
           setSelectedSkills={(skills) => setProjectForm({ ...projectForm, selectedSkills: skills })}
           currentColors={currentColors}
@@ -191,7 +136,7 @@ export default function ProjectForm({
         <Text style={{ marginVertical: 5, color: currentColors.textSecondary }}>Media Type</Text>
         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
           <TouchableOpacity
-            onPress={() => handleMediaTypeChange('link')}
+            onPress={() => handleMediaTypeChange({type:'link', setMediaType, setProjectForm, projectForm, setMediaLink})}
             style={{
               backgroundColor: mediaType === 'link' ? currentColors.primary : currentColors.card,
               padding: 12,
@@ -204,7 +149,7 @@ export default function ProjectForm({
             <Text style={{ color: mediaType === 'link' ? 'white' : currentColors.textPrimary }}>Link</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => handleMediaTypeChange('file')}
+            onPress={() => handleMediaTypeChange({type:'file', setMediaType, setProjectForm, projectForm, setMediaLink})}
             style={{
               backgroundColor: mediaType === 'file' ? currentColors.primary : currentColors.card,
               padding: 12,
@@ -238,7 +183,7 @@ export default function ProjectForm({
         {mediaType === 'file' && (
           <>
             <TouchableOpacity
-              onPress={handleFilePicker}
+              onPress={() => handleFilePicker({selectedFiles, projectForm, setSelectedFiles, setProjectForm})}
               style={{
                 backgroundColor: currentColors.primary,
                 padding: 12,
@@ -256,11 +201,11 @@ export default function ProjectForm({
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {selectedFiles.map((file, index) => (
                   <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-                    {getFileIcon(file.mimeType)}
+                    {getFileIcon({mimeType:file.mimeType, currentColors})}
                     <Text style={{ color: currentColors.textPrimary, marginLeft: 5, maxWidth: 100 }} numberOfLines={1}>
                       {file.name}
                     </Text>
-                    <TouchableOpacity onPress={() => handleRemoveFile(file.uri)} style={{ marginLeft: 10 }}>
+                    <TouchableOpacity onPress={() => handleRemoveFile({uri:file.uri, selectedFiles, projectForm, setSelectedFiles, setProjectForm})} style={{ marginLeft: 10 }}>
                       <Ionicons name="close-circle" size={25} color={currentColors.danger} />
                     </TouchableOpacity>
                   </View>
@@ -270,7 +215,7 @@ export default function ProjectForm({
           </>
         )}
 
-        <ContinueProjectForm lowerForm={lowerForm} setLowerForm={setLowerForm} setSelectEdit={setSelectEdit} selectEdit={selectEdit} clearForm={clearForm} />
+        <Form lowerForm={lowerForm} setLowerForm={setLowerForm} setSelectEdit={setSelectEdit} selectEdit={selectEdit} clearForm={clearForm} />
 
         <TouchableOpacity
           onPress={() => {

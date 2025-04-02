@@ -8,9 +8,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import ModalRightToLeft from '@/models/ModalRightToLeft';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import ProjectForm from './projectRenders';
+import Index from './projectRenders';
 import { Project, Skill } from '../../Messages/Chats/chatInterfaces';
-import Skills from './skills';
+
 
 
 export default function Projects({
@@ -131,7 +131,8 @@ export default function Projects({
         </ScrollView>
 
         {/* Project Form Component */}
-        <ProjectForm
+        <Index
+          skills={skills}
           projectForm={projectForm}
           setProjectForm={setProjectForm}
           currentColors={currentColors}

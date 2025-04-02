@@ -198,7 +198,7 @@ export interface Project {
   description: string;
   skills: { name: string; percentage: string; skillType: string; type: string }[];
   mediaType: "link" | "file"; // 👈 Ensure this is restricted
-  media: string;
+  media: {uri: string, name: string, mimeType: string}[]| string;
   selectedSkills: string[];
   isCurrent: boolean;
   endDate: string;
@@ -212,6 +212,7 @@ export interface Project {
 
 
 export interface ProjectFormProps {
+  skills:any[];
   projectForm: Project;
   setProjectForm: (form: Project) => void;
   currentColors: any;

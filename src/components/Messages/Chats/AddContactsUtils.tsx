@@ -31,6 +31,8 @@ export const fetchContacts = async ({
   setStoredContacts,
   setNonStoredContacts,
 }: FetchContactsParams) => {
+
+  console.log("Nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnndndndndndndndndndnddndndndndndn")
   try {
     setLoading(true);
     const permission = await Contacts.requestPermissionsAsync();

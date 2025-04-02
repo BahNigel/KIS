@@ -79,7 +79,7 @@ const RegistrationPage: React.FC<RegisterPageProps> = ({
       country: phoneInput.current?.getCountryCode(),
       password,
     });
-
+    console.log("how that you are working properly: ", userDetails)
     setShowVerifyModal(true);
   };
 
@@ -198,7 +198,12 @@ const RegistrationPage: React.FC<RegisterPageProps> = ({
 
       <VerifyPage
         visible={showVerifyModal}
-        onClose={() => setShowVerifyModal(false)}
+        onClose={() => {
+          setShowVerifyModal(false);
+          if (navigation) {
+            navigation.navigate('Home'); // Navigate to home screen after verification
+          }
+        }}
         verificationCode={verificationCode}
         userDetails={userDetails}
         navigation={navigation}

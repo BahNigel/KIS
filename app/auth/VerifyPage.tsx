@@ -78,6 +78,7 @@ export default function VerifyPage({ visible, onClose, verificationCode, userDet
           errorMessage: 'Login failed! Please try again.',
         };
 
+
         // Attempt user registration
         const registerResponse = await postRequest(ROUTES.auth.register, registrationData, options);
 

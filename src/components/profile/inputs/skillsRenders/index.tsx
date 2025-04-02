@@ -2,18 +2,10 @@ import { Skill } from "@/src/components/Messages/Chats/chatInterfaces";
 import { useState } from "react";
 import { ScrollView, TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import Skills from "../skills";
+import handleSkillPress from "./action";
+import { SkillsSelectionProps } from "./interface";
+import styles from "./styles";
 
-interface Props {
-  skills: Skill[];
-  selectedSkills: string[];
-  setSelectedSkills: (skills: string[]) => void;
-  currentColors: any;
-  startSelect: boolean;
-  setStartSelect: (value: boolean)=>void;
-  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
-  setSelectEdit: (value: any[])=>void;
-  selectEdit: any[]; setOpenAnyModal: (value: string) => void;
-}
 
 export default function SkillsSelection({
   skills,
@@ -26,21 +18,12 @@ export default function SkillsSelection({
   setSelectEdit, 
   selectEdit,
   setOpenAnyModal,
-}: Props) {
+}: SkillsSelectionProps) {
   const selectedSkillsSet = new Set(selectedSkills);
   const [openSkills, setOpenSkills] = useState(false);
 
   const closeSkills = () => {
     setOpenSkills(false);
-  };
-
-
-  const handleSkillPress = (name: string) => {
-    const updatedSkills = selectedSkillsSet.has(name)
-      ? selectedSkills.filter((s) => s !== name)
-      : [...selectedSkills, name];
-
-    setSelectedSkills(updatedSkills);
   };
 
   return (
@@ -62,7 +45,7 @@ export default function SkillsSelection({
           {skills.map((item) => (
             <TouchableOpacity
               key={item.name}
-              onPress={() => handleSkillPress(item.name)}
+              onPress={() => handleSkillPress({name: item.name, selectedSkillsSet, selectedSkills, setSelectedSkills})}
               style={[
                 styles.skillButton,
                 {
@@ -143,31 +126,4 @@ export default function SkillsSelection({
   );
 }
 
-const styles = StyleSheet.create({
-  skillCountText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  scrollView: {
-    maxHeight: 150,
-    marginVertical: 10,
-  },
-  scrollContent: {
-    flexDirection: "row",
-  },
-  skillButton: {
-    padding: 8,
-    borderRadius: 8,
-    margin: 3,
-    flexDirection: "row",
-  },
-  skillContainer: {
-    flexDirection: "row",
-    padding: 5,
-    borderRadius: 5,
-  },
-  skillText: {
-    marginRight: 5,
-  },
-});
+

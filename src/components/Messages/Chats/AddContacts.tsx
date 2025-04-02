@@ -1,4 +1,3 @@
-// AddContacts.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, useColorScheme, Platform, TextInput, Button, ActivityIndicator, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -56,7 +55,7 @@ const AddContacts: React.FC<ArchivedProps> = ({ visible, onClose }) => {
   const [searchQuery, setSearchQuery] = useState<string>(''); // State for search input
   const platform = Platform.OS;
 
-  // Fetch contacts when modal is opened
+  // Fetch contacts when modal is opened and visible is true
   useEffect(() => {
     if (visible) {
       fetchContacts({
@@ -68,12 +67,13 @@ const AddContacts: React.FC<ArchivedProps> = ({ visible, onClose }) => {
   }, [visible]);
 
   useEffect(() => {
-    fetchWebContacts({
-      phoneOrEmail: "",
-      setStoredContacts: (contacts) => setStoredContacts(contacts),
-    });
-  }, []);
-  
+    if (visible) {
+      fetchWebContacts({
+        phoneOrEmail: "",
+        setStoredContacts: (contacts) => setStoredContacts(contacts),
+      });
+    }
+  }, [visible]);
 
   const handleSelectContact = (contact: ContactData) => {
     setSingleUserData({
@@ -107,6 +107,11 @@ const AddContacts: React.FC<ArchivedProps> = ({ visible, onClose }) => {
     contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (Array.isArray(contact.contact) && contact.contact.some(number => number.includes(searchQuery.replace(/[\s+-]/g, "")))),
   );
+
+  // Don't perform any operations when visible is false
+  if (!visible) {
+    return null;
+  }
 
   return (
     <ModalRightToLeft visible={visible} onClose={onClose} name="Add Contacts" 

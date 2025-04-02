@@ -36,14 +36,23 @@ export const postRequest = async (
     const cacheType = CacheTypes.AUTH_CACHE;
     const cacheKey = CacheKeys.LOGIN_DATA;
 
-    const userData = await getCachedDataByKey(cacheType, cacheKey);
-    const token = userData[0]?.token?.access || null;
-    console.log("token: ",token)
+    let token = null;
+    try {
+      const userData = await getCachedDataByKey(cacheType, cacheKey);
+      token = userData[0]?.token?.access || null;
+    } catch (err) {
+      console.log("Error retrieving token:", err);
+    }
+
+    console.log("token: ", token || "No token found");
 
     const defaultHeaders: { Authorization?: string; 'Content-Type': string } = {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
+
+    if (token) {
+      defaultHeaders.Authorization = `Bearer ${token}`;
+    }
 
     const headers = { ...defaultHeaders, ...options.headers };
 
