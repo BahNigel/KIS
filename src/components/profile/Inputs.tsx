@@ -2,20 +2,22 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Button, ScrollView } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Skills from "./inputs/skills"; // Assuming this is a component for skills form/modal
-import { handleRemoveProject, renderSkillItem } from "./profileActions";
+import { handleRemoveEntry, renderSkillItem } from "./profileActions";
 import Projects from "./inputs/projects";
-import { Project } from "../Messages/Chats/chatInterfaces";
+import { Education, Project } from "../Messages/Chats/chatInterfaces";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import Educations from "./inputs/Education";
 
 const JobInputs = ({ currentColors }:{currentColors: any}) => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [education, setEducation] = useState<any>([]);
+  const [education, setEducation] = useState<Education[]>([]);
   const [experience, setExperience] = useState<any>([]);
   const [services, setServices] = useState<any>([]);
   const [skills, setSkills] = useState<any>([]);
   const [certificates, setCertificates] = useState<any>([]);
   const [startSelect, setStartSelect] = useState(false);
   const [startSelectProject, setStartSelectProject] = useState(false);
+  const [startSelectEducation, setStartSelectEducation] = useState(false);
   const [selectEdit, setSelectEdit] = useState<any[]>([]);
   const [openAnyModal, setOpenAnyModal] = useState('');
 
@@ -36,6 +38,25 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
       type: 'project'
     });
 
+    const [educationForm, setEducationForm] = useState<Education>({
+      id: 1,
+      name: '',
+      degree: '',
+      description: '',
+      field: '',
+      skills: skills, // Set initial skills to the passed skills
+      selectedSkills: [],
+      mediaType: 'file',
+      media: '',
+      isCurrent: false,
+      endDate: '',
+      grades: '',
+      activites: '',
+      startDate: '',
+      files: [],
+      type: 'education'
+    });
+
   // Modal visibility states
   const [openSkills, setOpenSkills] = useState(false);
   const [openProjects, setOpenProjects] = useState(false);
@@ -45,13 +66,14 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
   const [openCertificates, setOpenCertificates] = useState(false);
 
   useEffect(()=>{
-    console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&: ", openProjects)
   }, [openProjects])
 
   useEffect(()=>{
     if (selectEdit.length > 0) {
       const projectToEdit = selectEdit.find(item => item.name && item.type=='project');
+      const educationToEdite = selectEdit.find(item => item.name && item.type=='education');
       setProjectForm(projectToEdit);
+      setEducationForm(educationToEdite)
     }
   }, [selectEdit])
     
@@ -68,6 +90,10 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
           setOpenProjects(true);
         }      
         break;
+      case 'education':
+        if (!openEducation && selectEdit.some(item => item.type === "education")) { 
+          setOpenEducation(true);
+        } 
       default:
         break;
     }    
@@ -77,6 +103,7 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
   const closeSkills = () => setOpenSkills(false);
   const closeProjects = () => setOpenProjects(false);
   const toggleProjects = (value: boolean) => setOpenProjects(value);
+  const toggleEducation = (value: boolean) => setOpenEducation(value);
   const closeEducation = () => setOpenEducation(false);
   const closeExperience = () => setOpenExperience(false);
   const closeServices = () => setOpenServices(false);
@@ -144,21 +171,17 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
       {/* Education Section */}
       <View style={{ marginVertical: 10, flexDirection: "row", alignItems: "center" }}>
         <MaterialCommunityIcons name="school" size={34} color={currentColors.textSecondary} />
-        <TextInput
-          style={{
-            height: 40,
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            marginBottom: 10,
-            color: currentColors.textPrimary,
-            marginLeft: 10,
-            flex: 1,
-          }}
-          placeholder="Education"
-          placeholderTextColor={currentColors.textSecondary}
-          value={education}
-          onChangeText={setEducation}
-        />
+        <View style={{maxHeight: 60, borderBottomWidth: 1, borderBottomColor: currentColors.textSecondary, marginBottom: 10,marginLeft: 10, flex: 1,}}>
+          {/* Display added projects */}
+          <Text style={{color: currentColors.textSecondary}}>Education</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {education.map((item, index) => (
+              <View key={index} style={{ flexDirection: 'row', marginVertical: 5 }}>
+                {renderSkillItem(item,index,currentColors,education,setEducation, setStartSelectEducation, selectEdit, setSelectEdit, setOpenAnyModal)}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
         <TouchableOpacity onPress={() => setOpenEducation(true)}>
           <MaterialCommunityIcons name="plus" size={34} color={currentColors.textSecondary} />
         </TouchableOpacity>
@@ -247,6 +270,22 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
           setSelectEdit={setSelectEdit} selectEdit={selectEdit} setOpenAnyModal={setOpenAnyModal}
           projectForm={projectForm} setProjectForm={setProjectForm} toggleProjects={toggleProjects}
         />
+
+        <Educations
+          visible={openEducation} 
+          onClose={closeEducation} 
+          skills={skills} 
+          setSkills={setSkills} 
+          education={education} 
+          setEducation={setEducation} 
+          currentColors={currentColors}  
+          startSelect={startSelectEducation} 
+          setStartSelect={setStartSelectEducation} 
+          setSelectEdit={setSelectEdit} selectEdit={selectEdit} setOpenAnyModal={setOpenAnyModal}
+          educationForm={educationForm} setEducationForm={setEducationForm} toggleEducation={toggleEducation}
+        />
+
+
 
     </View>
   );

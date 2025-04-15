@@ -195,140 +195,133 @@ export const renderSkillItem = (
 );
 
 
-export const handleAddProject = (
-  projectForm: Project,
-  projects: Project[],
-  setProjects: (projects: Project[]) => void,
-  setProjectForm: (arg0: Project) => void,
-  setSelectedFiles: (arg0: never[]) => void,
-  setLowerForm: (arg0: never[]) => void
+export const handleAddEntry = (
+  entryForm: any, 
+  entries: any[], 
+  setEntries: (entries: any[]) => void, 
+  setEntryForm: (arg0: any) => void, 
+  setSelectedFiles: (arg0: never[]) => void, 
+  setLowerForm: (arg0: never[]) => void,
+  type: string
 ) => {
-  if (!projectForm.name || !projectForm.description || !projectForm.skills.length) {
-    Alert.alert('Error', 'Please fill all the required fields.');
-    return;
-  }
-
-  const newProject = {
-    id: Math.floor(Math.random() * 1000000),
-    name: projectForm.name,
-    description: projectForm.description,
-    skills: projectForm.skills,
-    mediaType: projectForm.mediaType,
-    media: projectForm.media,
-    selectedSkills: projectForm.selectedSkills, // ✅ Corrected reference
-    isCurrent: projectForm.isCurrent,
-    endDate: projectForm.endDate,
-    selectedCompanies: projectForm.selectedCompanies,
-    selectedContributors: projectForm.selectedContributors,
-    startDate: projectForm.startDate,
-    files: projectForm.files, 
-    type: projectForm.type,
+  // Define required fields for different entry types
+  const requiredFields: { [key: string]: string[] } = {
+    project: ['name', 'description', 'skills'],
+    education: ['name', 'description', 'degree', 'grades', 'field', 'skills'],
+    experience: ['company', 'position', 'description', 'startDate', 'endDate'],
+    certification: ['name', 'institution', 'dateIssued'],
+    // Add more entry types as needed
   };
 
-  // Add the new project to the projects list
-  setProjects([...projects, newProject]);
+  // Check if the entry type exists in requiredFields
+  if (entryForm.type in requiredFields) {
+    const missingFields = requiredFields[entryForm.type].filter(
+      (field) => !entryForm[field] || (Array.isArray(entryForm[field]) && entryForm[field].length === 0)
+    );
 
-  // Log the projects list to console
-  console.log('Projects List:', [...projects, newProject]);
+    if (missingFields.length > 0) {
+      Alert.alert('Error', `Please fill all the required fields: ${missingFields.join(', ')}`);
+      return;
+    }
+  }
 
-  // Clear the form for the next project
-  setProjectForm({
-    id: Math.floor(Math.random() * 1000000),
-    name: '',
-    description: '',
-    skills: projectForm.skills,
-    mediaType: 'file',
-    media: projectForm.media,
-    selectedSkills: projectForm.selectedSkills, // ✅ Corrected reference
-    isCurrent: projectForm.isCurrent,
-    endDate: projectForm.endDate,
-    selectedCompanies: projectForm.selectedCompanies,
-    selectedContributors: projectForm.selectedContributors,
-    startDate: projectForm.startDate,
-    files: [], // ✅ Clears files correctly
-    type: 'project',
-  });
+  // Generate new entry with a unique ID
+  const newEntry = { id: Math.floor(Math.random() * 1000000), ...entryForm , type};
 
-  setSelectedFiles([]); // ✅ Clears selected files
-  setLowerForm([]); // ✅ Ensures lowerForm is reset
+  // Ensure the function properly updates state
+  setEntries([...entries, newEntry]); // ✅ Ensures correct type assignment
+
+  // Log the updated entries list
+  console.log('Updated Entries List:', [...entries, newEntry]);
+
+  // Clear the form dynamically
+  setEntryForm({});
+  setSelectedFiles([]); 
+  setLowerForm([]); 
 };
 
 
-export const handleRemoveProject = (
+export const handleRemoveEntry = (
   index: number,
-  projects: Project[],
-  setProjects: (prevProjects: any) => void
+  entries: any[],
+  setEntries: (entries: any[]) => void
 ) => {
-  const updatedProjects: Project[] = projects.filter((_: any, i: number) => i !== index);
-  setProjects(updatedProjects);
+  const updatedEntries: any[] = entries.filter((_, i: number) => i !== index);
+  setEntries(updatedEntries);
 
-  console.log('Updated Projects List:', projects.filter((_: any, i: number) => i !== index));
+  console.log('Updated Entries List:', updatedEntries);
 };
 
 
-export const handleUpdateProject = (
-  projectForm: Project,
+
+export const handleUpdateEntry = (
+  entryForm: any,
   selectedFiles: { uri: string; name: string; mimeType: string }[],
-  lowerForm: string | any[],
-  projects: Project[],
-  setProjects: (projects: Project[]) => void,
-  setProjectForm: (form: Project) => void,
+  lowerForm: any[],
+  entries: any[],
+  setEntries: (entries: any[]) => void,
+  setEntryForm: (form: any) => void,
   setSelectedFiles: (files: { uri: string; name: string; mimeType: string }[]) => void,
-  setLowerForm: (form: { endDate: string; isCurrent: boolean; selectedCompanies: []; selectedContributors: []; startDate: string }[]) => void,
-  setSelectEdit: (value: any[])=>void, selectEdit: any[], editingProject: any[], setClearForm: (value:boolean)=>void, toggleProjects: (value: boolean) => void,
+  setLowerForm: (form: any[]) => void,
+  setSelectEdit: (value: any[]) => void, 
+  selectEdit: any[], 
+  editingEntry: any[], 
+  setClearForm: (value: boolean) => void, 
+  toggleEntries: (value: boolean) => void,
+  type: string,
 ): void => {
   try {
-    // Validate the data before update
-    if (!projectForm.name || !projectForm.description) {
-      Alert.alert('Missing Data', 'Please fill in all fields before updating the project.');
+    // Validate the required fields dynamically
+    if (!entryForm.name || !entryForm.description) {
+      Alert.alert('Missing Data', 'Please fill in all required fields before updating.');
       return;
     }
 
     if (lowerForm.length === 0) {
-      Alert.alert('Missing Date', 'Please provide the start and end date for the project.');
+      Alert.alert('Missing Date', 'Please provide the start and end date.');
       return;
     }
 
-    console.log("7777777777777777777777777777777777777777777777777777777777777777777777777777: ", lowerForm)
+    console.log("Lower Form Data:", lowerForm);
 
-    const updatedProject: Project = {
-      ...projectForm,
-      files: selectedFiles as any[], // Assuming the files are of type File[]
-      endDate: lowerForm[0].endDate,
-      isCurrent: lowerForm[0].isCurrent,
-      selectedCompanies: lowerForm[0].selectedCompanies,
-      selectedContributors: lowerForm[0].selectedContributors,
-      startDate: lowerForm[0].startDate
+    const updatedEntry: any = {
+      ...entryForm,
+      files: selectedFiles, 
+      endDate: lowerForm[0]?.endDate || '',
+      isCurrent: lowerForm[0]?.isCurrent || false,
+      selectedCompanies: lowerForm[0]?.selectedCompanies || [],
+      selectedContributors: lowerForm[0]?.selectedContributors || [],
+      startDate: lowerForm[0]?.startDate || '',
+      type
     };
 
-    // Find the project being updated
-    const projectIndex = projects.findIndex(project => project.id === projectForm.id);
-    if (projectIndex === -1) {
-      Alert.alert('Project Not Found', 'The project you are trying to update does not exist.');
+    // Find the entry being updated
+    const entryIndex = entries.findIndex(entry => entry.id === entryForm.id);
+    if (entryIndex === -1) {
+      Alert.alert('Entry Not Found', 'The item you are trying to update does not exist.');
       return;
     }
 
-    
-    console.log("000000000000000000000000000000000000000000000000000000000000000000000000: ", projectIndex)
+    console.log("Entry Index Found:", entryIndex);
 
-    // Update the project in the projects array
-    const updatedProjects: Project[] = [...projects];
-    updatedProjects[projectIndex] = updatedProject;
+    // Update the entry in the array
+    const updatedEntries = [...entries];
+    updatedEntries[entryIndex] = updatedEntry;
 
-    // Update the state with the new list of projects
-    setProjects(updatedProjects);
+    // Update state with the new entries list
+    setEntries(updatedEntries);
 
     // Reset the form and files
-    setProjectForm({ ...projectForm, name: '', description: '', media: '', skills: [], selectedSkills: [] });
+    setEntryForm({ name: '', description: '', media: '', skills: [], selectedSkills: [] });
     setSelectedFiles([]);
     setLowerForm([{ endDate: '', isCurrent: false, selectedCompanies: [], selectedContributors: [], startDate: '' }]);
-    setSelectEdit(selectEdit.filter(item => item !== editingProject)); // Remove from edit list
+    setSelectEdit(selectEdit.filter(item => item !== editingEntry));
 
-    setClearForm(true)
-    toggleProjects(false)
-    Alert.alert('Success', 'Project updated successfully!');
+    setClearForm(true);
+    toggleEntries(false);
+    Alert.alert('Success', 'Entry updated successfully!');
   } catch (error) {
-    console.error('Error updating project:', error);
-    Alert.alert('Error', 'There was an issue updating the project. Please try again.');
+    console.error('Error updating entry:', error);
+    Alert.alert('Error', 'There was an issue updating the entry. Please try again.');
   }
 };

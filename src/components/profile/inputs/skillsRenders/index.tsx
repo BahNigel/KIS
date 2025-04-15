@@ -30,7 +30,7 @@ export default function SkillsSelection({
     <>
       {/* Display available and selected skills count */}
       <Text style={[styles.skillCountText, { color: currentColors.textPrimary }]}>
-        {`Selected ${selectedSkills.length} out of ${skills.length} skills`}
+        {`Selected ${selectedSkills?.length} out of ${skills?.length} skills`}
       </Text>
 
       {/* Skills Selection */}

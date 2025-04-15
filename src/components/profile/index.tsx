@@ -8,7 +8,7 @@ import { API_BASE_URL } from '@/src/routes';
 import ModalRightToLeft from '@/models/ModalRightToLeft';
 import { Colors } from '@/constants/Colors';
 import handleChooseImage, { encodeImageToBase64, saveProfileData } from './profileActions';
-import JobInputs from './jobInputs';
+import JobInputs from './Inputs';
 import Status from './inputs/status';
 
 export default function EditProfile({ visible, onClose }:{visible:boolean, onClose:()=>void}) {

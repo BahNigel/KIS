@@ -209,6 +209,25 @@ export interface Project {
   type: string;
 }
 
+export interface Education {
+  id: number,
+  name: string;
+  degree: string;
+  description: string;
+  field: string
+  skills: { name: string; percentage: string; skillType: string; type: string }[];
+  mediaType: "link" | "file"; // 👈 Ensure this is restricted
+  media: {uri: string, name: string, mimeType: string}[]| string;
+  selectedSkills: string[];
+  isCurrent: boolean;
+  endDate: string;
+  grades: string;
+  activites: string;
+  startDate: string;
+  files: { uri: string; name: string; mimeType: string }[];
+  type: string;
+}
+
 
 
 export interface ProjectFormProps {
@@ -216,13 +235,36 @@ export interface ProjectFormProps {
   projectForm: Project;
   setProjectForm: (form: Project) => void;
   currentColors: any;
-  handleAddProject: () => void;
+  handleAddEntry: () => void;
   startSelect: boolean;
   setStartSelect: (value: boolean) => void;
   setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
   projects: Project[];
   setProjects: (projects: Project[]) => void;
-  setSelectEdit: (value: any[])=>void;toggleProjects:(value: boolean)=>void;
-  selectEdit: any[]; setOpenAnyModal: (value: string) => void; clearForm: boolean;setClearForm:(value: boolean)=>void;
+  setSelectEdit: (value: any[])=>void;
+  toggleProjects:(value: boolean)=>void;
+  selectEdit: any[]; 
+  setOpenAnyModal: (value: string) => void; 
+  clearForm: boolean;
+  setClearForm:(value: boolean)=>void;
 }
 
+export interface EducationFormProps {
+  visible: boolean;
+  skills: any[];
+  educationForm: Education;
+  setEducationForm: (form: Education) => void;
+  currentColors: any;
+  handleAddEducation: () => void;
+  startSelect: boolean;
+  setStartSelect: (value: boolean) => void;
+  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
+  education: Education[];
+  setEducation: (education: Education[]) => void;
+  setSelectEdit: (value: any[]) => void;
+  toggleEducation: (value: boolean) => void;
+  selectEdit: any[];
+  setOpenAnyModal: (value: string) => void;
+  clearForm: boolean;
+  setClearForm: (value: boolean) => void;
+}
