@@ -4,20 +4,22 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Skills from "./inputs/skills"; // Assuming this is a component for skills form/modal
 import { handleRemoveEntry, renderSkillItem } from "./profileActions";
 import Projects from "./inputs/projects";
-import { Education, Project } from "../Messages/Chats/chatInterfaces";
+import { Education, Experience, Project } from "../Messages/Chats/chatInterfaces";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Educations from "./inputs/Education";
+import Experiences from "./inputs/experience";
 
 const JobInputs = ({ currentColors }:{currentColors: any}) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
-  const [experience, setExperience] = useState<any>([]);
+  const [experience, setExperience] = useState<Experience[]>([]);
   const [services, setServices] = useState<any>([]);
   const [skills, setSkills] = useState<any>([]);
   const [certificates, setCertificates] = useState<any>([]);
   const [startSelect, setStartSelect] = useState(false);
   const [startSelectProject, setStartSelectProject] = useState(false);
   const [startSelectEducation, setStartSelectEducation] = useState(false);
+  const [startSelectExperience, setStartSelectExperience] = useState(false);
   const [selectEdit, setSelectEdit] = useState<any[]>([]);
   const [openAnyModal, setOpenAnyModal] = useState('');
 
@@ -54,8 +56,25 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
       activites: '',
       startDate: '',
       files: [],
-      type: 'education'
+      type: 'education',
+      lectures: '',
+      mentors: '',
     });
+  const [experienceForm, setExperienceForm] = useState<any>({
+    id: 1,
+    name: '',
+    employmentType: '',
+    location: '',
+    whereFound: '',
+    company: '',
+    position: '',
+    description: '',
+    startDate: '',
+    endDate: '',
+    isCurrent: false,
+    type: 'experience',
+    files: [],
+  });
 
   // Modal visibility states
   const [openSkills, setOpenSkills] = useState(false);
@@ -94,6 +113,13 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
         if (!openEducation && selectEdit.some(item => item.type === "education")) { 
           setOpenEducation(true);
         } 
+        break
+      case 'experience':
+        if (!openExperience && selectEdit.some(item => item.type === "experience")) {
+          console.log('Experience Modal Opened');
+          setOpenExperience(true);
+        } 
+        break;
       default:
         break;
     }    
@@ -190,21 +216,26 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
       {/* Experience Section */}
       <View style={{ marginVertical: 10, flexDirection: "row", alignItems: "center" }}>
         <MaterialCommunityIcons name="briefcase" size={34} color={currentColors.textSecondary} />
-        <TextInput
+        <View
           style={{
-            height: 40,
+            maxHeight: 60,
             borderBottomWidth: 1,
             borderBottomColor: currentColors.textSecondary,
             marginBottom: 10,
-            color: currentColors.textPrimary,
             marginLeft: 10,
             flex: 1,
           }}
-          placeholder="Experience"
-          placeholderTextColor={currentColors.textSecondary}
-          value={experience}
-          onChangeText={setExperience}
-        />
+        >
+          {/* Display added experience */}
+          <Text style={{ color: currentColors.textSecondary }}>Experience</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {experience.map((item, index) => (
+              <View key={index} style={{ flexDirection: 'row', marginVertical: 5 }}>
+                {renderSkillItem(item, index, currentColors, experience, setExperience, setStartSelectExperience, selectEdit, setSelectEdit, setOpenAnyModal)}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
         <TouchableOpacity onPress={() => setOpenExperience(true)}>
           <MaterialCommunityIcons name="plus" size={34} color={currentColors.textSecondary} />
         </TouchableOpacity>
@@ -284,6 +315,25 @@ const JobInputs = ({ currentColors }:{currentColors: any}) => {
           setSelectEdit={setSelectEdit} selectEdit={selectEdit} setOpenAnyModal={setOpenAnyModal}
           educationForm={educationForm} setEducationForm={setEducationForm} toggleEducation={toggleEducation}
         />
+
+        <Experiences
+          visible={openExperience}
+          onClose={closeExperience}
+          skills={skills}
+          setSkills={setSkills}
+          experience={experience}
+          setExperience={setExperience}
+          currentColors={currentColors}
+          startSelect={startSelect}
+          setStartSelect={setStartSelectExperience}
+          setSelectEdit={setSelectEdit}
+          selectEdit={selectEdit}
+          setOpenAnyModal={setOpenAnyModal}
+          experienceForm={experienceForm}
+          setExperienceForm={setExperienceForm}
+          toggleExperience={setOpenExperience}
+        />
+
 
 
 

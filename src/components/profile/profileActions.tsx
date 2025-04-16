@@ -201,14 +201,13 @@ export const handleAddEntry = (
   setEntries: (entries: any[]) => void, 
   setEntryForm: (arg0: any) => void, 
   setSelectedFiles: (arg0: never[]) => void, 
-  setLowerForm: (arg0: never[]) => void,
   type: string
 ) => {
   // Define required fields for different entry types
   const requiredFields: { [key: string]: string[] } = {
     project: ['name', 'description', 'skills'],
     education: ['name', 'description', 'degree', 'grades', 'field', 'skills'],
-    experience: ['company', 'position', 'description', 'startDate', 'endDate'],
+    experience: ['name', 'employmentType', 'location', 'whereFound', 'company', 'description'],
     certification: ['name', 'institution', 'dateIssued'],
     // Add more entry types as needed
   };
@@ -237,7 +236,6 @@ export const handleAddEntry = (
   // Clear the form dynamically
   setEntryForm({});
   setSelectedFiles([]); 
-  setLowerForm([]); 
 };
 
 
@@ -257,12 +255,10 @@ export const handleRemoveEntry = (
 export const handleUpdateEntry = (
   entryForm: any,
   selectedFiles: { uri: string; name: string; mimeType: string }[],
-  lowerForm: any[],
   entries: any[],
   setEntries: (entries: any[]) => void,
   setEntryForm: (form: any) => void,
   setSelectedFiles: (files: { uri: string; name: string; mimeType: string }[]) => void,
-  setLowerForm: (form: any[]) => void,
   setSelectEdit: (value: any[]) => void, 
   selectEdit: any[], 
   editingEntry: any[], 
@@ -277,21 +273,9 @@ export const handleUpdateEntry = (
       return;
     }
 
-    if (lowerForm.length === 0) {
-      Alert.alert('Missing Date', 'Please provide the start and end date.');
-      return;
-    }
-
-    console.log("Lower Form Data:", lowerForm);
-
     const updatedEntry: any = {
       ...entryForm,
       files: selectedFiles, 
-      endDate: lowerForm[0]?.endDate || '',
-      isCurrent: lowerForm[0]?.isCurrent || false,
-      selectedCompanies: lowerForm[0]?.selectedCompanies || [],
-      selectedContributors: lowerForm[0]?.selectedContributors || [],
-      startDate: lowerForm[0]?.startDate || '',
       type
     };
 
@@ -314,7 +298,6 @@ export const handleUpdateEntry = (
     // Reset the form and files
     setEntryForm({ name: '', description: '', media: '', skills: [], selectedSkills: [] });
     setSelectedFiles([]);
-    setLowerForm([{ endDate: '', isCurrent: false, selectedCompanies: [], selectedContributors: [], startDate: '' }]);
     setSelectEdit(selectEdit.filter(item => item !== editingEntry));
 
     setClearForm(true);

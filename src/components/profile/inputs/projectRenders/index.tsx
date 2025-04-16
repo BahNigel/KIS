@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Text, TouchableOpacity, ScrollView, TextInput, View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import { ProjectFormProps } from '../../../Messages/Chats/chatInterfaces';
+import { Education, ProjectFormProps } from '../../../Messages/Chats/chatInterfaces';
 import SkillsSelection from '../skillsRenders';
-import Form from './form';
 import { handleAddEntry, handleUpdateEntry, renderSkillItem } from '../../profileActions';
 import handleFilePicker, { getFileIcon, handleMediaTypeChange, handleRemoveFile } from './action';
+import { DynamicFormField } from '../educationRenders/interface';
+import DynamicForm from '@/models/DynamicForm';
 
 export default function Index({
   skills,
@@ -24,12 +25,12 @@ export default function Index({
   clearForm,
   setClearForm, toggleProjects
 }: ProjectFormProps) {
-  const [lowerForm, setLowerForm] = useState<{ endDate: string; isCurrent: boolean; selectedCompanies: []; selectedContributors: []; startDate: string }[]>([]);
   const [mediaLink, setMediaLink] = useState<any>('');
   const [editingProject, setEditingProject] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [mediaType, setMediaType] = useState(projectForm?.mediaType || 'file');
   const [media, setMedia] = useState(projectForm?.media || '');
+  const [isVisible, setIsVisible] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<{ uri: string; name: string; mimeType: string }[]>(projectForm?.files || []);
 
   
@@ -44,23 +45,14 @@ export default function Index({
       setMedia(projectToEdit.media)
       setSelectedFiles(projectToEdit.media || [])
       setMediaLink(media)
-      setLowerForm([{ endDate: projectToEdit.endDate, isCurrent: projectToEdit.isCurrent, selectedCompanies: projectToEdit.selectedCompanies, selectedContributors: projectToEdit.selectedContributors, startDate: projectToEdit.startDate }])
     }
     setRefreshKey(prevKey => prevKey + 1);
     
   }, [selectEdit]);
 
-  useEffect(() => {
-    setProjectForm({
-      ...projectForm,
-      ...(Array.isArray(lowerForm) ? lowerForm[0] : lowerForm),
-    });
-    
-  }, [lowerForm, projects]);
 
   useEffect(() =>{
     if(clearForm){
-      setLowerForm([]);
       setProjectForm(
         { id: 1, 
         name: '',
@@ -80,6 +72,46 @@ export default function Index({
     }
   },[clearForm])
 
+  const setValue = <T extends keyof Education>(field: T, value: Education[T]) => {
+      setProjectForm({
+        ...projectForm,
+        [field]: value,
+      });
+      console.log('Setting value:', field, value);
+      if (field === 'isCurrent') {
+        setIsVisible(!value);
+      }
+    };
+    
+   
+  
+    const dynamicFields: DynamicFormField[] = [
+      { name: 'name', label: 'Project Name', type: 'text', value: (value) => setValue('name', value), placeholder: 'Enter Project name', required: true, maxLength: 100 },
+      { name: 'description', label: 'Description', type: 'textarea', value: (value) => setValue('description', value), placeholder: 'Enter description', required: true, numberOfLines: 4 },
+      
+      {name: 'mediaType', label: 'Media Type', type: 'tabchoice',
+        options: [
+          { name: 'Link', label: 'Link', type: 'url', value: (value: any) => setValue('media', value), placeholder: 'Enter media URL', required: false },
+          { name: 'Files', label: 'Files', type: 'file', value: (value: any) => setValue('files', value), required: false }
+        ],value: (value) => setValue('mediaType', value),required: true
+      },
+  
+      { name: 'company', label: 'Company',type: 'typeSelector', placeholder: 'Type or select company', options: ['Google', 'Microsoft', 'Amazon', 'Tesla', 'OpenAI'], value: (value) => setValue('lectures', value), required: false}, 
+      { name: 'contributors', label: 'Contributors',type: 'typeSelector', placeholder: 'Type or select contributor', options: ['John Doe', 'Jane Smith', 'Elon Musk', 'Mark Zuckerberg', 'Sundar Pichai'], value: (value) => setValue('mentors', value), required: false},
+      { name: 'startDate', label: 'Start Date', type: 'date', value: (value) => setValue('startDate', value), placeholder: 'Select start date', required: true },
+      { name: 'isCurrent', label: 'Is Current', type: 'checkbox', value: (value) => setValue('isCurrent', value), isVisible: isVisible, required: false, canSetaction: true },];
+  
+    if (!isVisible) {
+      dynamicFields.splice(dynamicFields.findIndex(field => field.name === 'isCurrent'), 0, {
+        name: 'endDate',
+        label: 'End Date',
+        type: 'date',
+        value: (value) => setValue('endDate', value),
+        placeholder: 'Select end date',
+        required: true
+      });
+    }
+
   
 
   return (
@@ -93,31 +125,11 @@ export default function Index({
           ))}
         </ScrollView>
 
-        <TextInput
-          placeholder="Project Name"
-          placeholderTextColor={currentColors.textSecondary}
-          value={projectForm?.name}
-          onChangeText={(text) => setProjectForm({ ...projectForm, name: text })}
-          style={{
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            color: currentColors.textPrimary,
-            marginBottom: 10
-          }}
-        />
-
-        <TextInput
-          placeholder="Description"
-          placeholderTextColor={currentColors.textSecondary}
-          value={projectForm?.description}
-          onChangeText={(text) => setProjectForm({ ...projectForm, description: text })}
-          multiline
-          style={{
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            color: currentColors.textPrimary,
-            marginBottom: 10
-          }}
+        <DynamicForm 
+          fields={dynamicFields}  
+          formData ={projectForm}
+          setFormData={setProjectForm}
+          setAction={setIsVisible}
         />
 
         <SkillsSelection
@@ -132,97 +144,12 @@ export default function Index({
           selectEdit={selectEdit}
           setOpenAnyModal={setOpenAnyModal}
         />
-
-        <Text style={{ marginVertical: 5, color: currentColors.textSecondary }}>Media Type</Text>
-        <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-          <TouchableOpacity
-            onPress={() => handleMediaTypeChange({type:'link', setMediaType, setProjectForm, projectForm, setMediaLink})}
-            style={{
-              backgroundColor: mediaType === 'link' ? currentColors.primary : currentColors.card,
-              padding: 12,
-              borderRadius: 5,
-              marginRight: 10,
-              flex: 1,
-              alignItems: 'center'
-            }}
-          >
-            <Text style={{ color: mediaType === 'link' ? 'white' : currentColors.textPrimary }}>Link</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleMediaTypeChange({type:'file', setMediaType, setProjectForm, projectForm, setMediaLink})}
-            style={{
-              backgroundColor: mediaType === 'file' ? currentColors.primary : currentColors.card,
-              padding: 12,
-              borderRadius: 5,
-              flex: 1,
-              alignItems: 'center'
-            }}
-          >
-            <Text style={{ color: mediaType === 'file' ? 'white' : currentColors.textPrimary }}>File</Text>
-          </TouchableOpacity>
-        </View>
-
-        {mediaType === 'link' && (
-          <TextInput
-            placeholder="Enter Media Link"
-            placeholderTextColor={currentColors.textSecondary}
-            value={mediaLink}
-            onChangeText={(text) => {
-              setMediaLink(text);
-              setProjectForm({ ...projectForm, media: text });
-            }}
-            style={{
-              borderBottomWidth: 1,
-              borderBottomColor: currentColors.textSecondary,
-              color: currentColors.textPrimary,
-              marginBottom: 10
-            }}
-          />
-        )}
-
-        {mediaType === 'file' && (
-          <>
-            <TouchableOpacity
-              onPress={() => handleFilePicker({selectedFiles, projectForm, setSelectedFiles, setProjectForm})}
-              style={{
-                backgroundColor: currentColors.primary,
-                padding: 12,
-                borderRadius: 5,
-                marginBottom: 10,
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ color: 'white' }}>
-                {selectedFiles.length > 0 ? `${selectedFiles.length} File(s) Selected` : 'Select Files'}
-              </Text>
-            </TouchableOpacity>
-
-            <View style={{ backgroundColor: currentColors.card, padding: 10, borderRadius: 5 }}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {selectedFiles.map((file, index) => (
-                  <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-                    {getFileIcon({mimeType:file.mimeType, currentColors})}
-                    <Text style={{ color: currentColors.textPrimary, marginLeft: 5, maxWidth: 100 }} numberOfLines={1}>
-                      {file.name}
-                    </Text>
-                    <TouchableOpacity onPress={() => handleRemoveFile({uri:file.uri, selectedFiles, projectForm, setSelectedFiles, setProjectForm})} style={{ marginLeft: 10 }}>
-                      <Ionicons name="close-circle" size={25} color={currentColors.danger} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-          </>
-        )}
-
-        <Form lowerForm={lowerForm} setLowerForm={setLowerForm} setSelectEdit={setSelectEdit} selectEdit={selectEdit} clearForm={clearForm} />
-
         <TouchableOpacity
           onPress={() => {
             if (selectEdit.length > 0) {
-              handleUpdateEntry(projectForm, selectedFiles, lowerForm, projects, setProjects, setProjectForm, setSelectedFiles, setLowerForm, setSelectEdit, selectEdit, editingProject, setClearForm, toggleProjects, 'project');
+              handleUpdateEntry(projectForm, selectedFiles, projects, setProjects, setProjectForm, setSelectedFiles, setSelectEdit, selectEdit, editingProject, setClearForm, toggleProjects, 'project');
             } else {
-              handleAddEntry(projectForm,  projects, setProjects, setProjectForm, setSelectedFiles, setLowerForm, 'project');
+              handleAddEntry(projectForm,  projects, setProjects, setProjectForm, setSelectedFiles, 'project');
             }
           }}
           style={{ backgroundColor: currentColors.primary, padding: 12, borderRadius: 5, alignItems: 'center', marginTop: 10 }}

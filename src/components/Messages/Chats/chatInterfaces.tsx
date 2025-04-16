@@ -226,6 +226,28 @@ export interface Education {
   startDate: string;
   files: { uri: string; name: string; mimeType: string }[];
   type: string;
+  lectures: string;
+  mentors: string;
+}
+
+export interface Experience {
+  id: number;
+  name: string;
+  employmentType: string;
+  location: string;
+  whereFound: string;
+  company: string;
+  position: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+  type: 'experience';
+  files: { uri: string; name: string; mimeType: string }[];
+  skills?: any[];
+  selectedSkills: string[];
+  media?: { uri: string; name: string; mimeType: string }[] | string; // for file or link
+  mediaType?: 'file' | 'link'; // to differentiate between file and link uploads
 }
 
 
@@ -252,8 +274,8 @@ export interface ProjectFormProps {
 export interface EducationFormProps {
   visible: boolean;
   skills: any[];
-  educationForm: Education;
-  setEducationForm: (form: Education) => void;
+  educationForm: any;
+  setEducationForm: (form: any) => void;
   currentColors: any;
   handleAddEducation: () => void;
   startSelect: boolean;
@@ -268,3 +290,25 @@ export interface EducationFormProps {
   clearForm: boolean;
   setClearForm: (value: boolean) => void;
 }
+
+export interface ExperienceFormProps {
+  visible: boolean; 
+  skills: any[];
+  experienceForm: Experience;
+  setExperienceForm: (form: Experience) => void;
+  currentColors: any;
+  handleAddExperience: () => void;
+  startSelect: boolean;
+  setStartSelect: (value: boolean) => void;
+  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
+  experience: Experience[];
+  setExperience: (experience: Experience[]) => void;
+  setSelectEdit: (value: any[]) => void;
+  toggleExperience:(value: boolean)=>void;
+  selectEdit:any[];
+  setOpenAnyModal:(value:string)=>void;
+  clearForm: boolean;
+  setClearForm: (value: boolean) => void;
+  type: string;
+}
+

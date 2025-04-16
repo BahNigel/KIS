@@ -29,6 +29,11 @@ export const Colors = {
     coloredText: '#2B4FA7',
     openButtonBackground: '#4C6EF5',
     disabledButton: '#A0AEC0', // Disabled button color for light mode
+    danger: '#E53E3E', // Danger color for light mode
+    success: '#38A169', // Success color for light mode
+    warning: '#DD6B20', // Warning color for light mode
+    info: '#3182CE', // Info color for light mode
+    lightGray: '#F7FAFC', // Light gray color for light mode
   },
   dark: {
     text: '#FFFFFF',
@@ -57,5 +62,9 @@ export const Colors = {
     coloredText: '#1a73e8',
     openButtonBackground: '#2C5282',
     disabledButton: '#4A5568', // Disabled button color for dark mode
+    danger: '#F56565', // Danger color for dark mode
+    success: '#68D391', // Success color for dark mode
+    warning: '#F6E05E', // Warning color for dark mode
+    info: '#63B3ED', // Info color for dark mode
   },
 };
