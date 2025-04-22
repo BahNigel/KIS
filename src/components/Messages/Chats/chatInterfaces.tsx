@@ -312,3 +312,78 @@ export interface ExperienceFormProps {
   type: string;
 }
 
+export interface Service{
+  id: number;
+  name: string;
+  location: string;
+  whereFound: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  price: string;
+  type: 'service';
+  files: { uri: string; name: string; mimeType: string }[];
+  skills?: any[];
+  selectedSkills: string[];
+  media?: { uri: string; name: string; mimeType: string }[] | string; // for file or link
+  mediaType?: 'file' | 'link'; // to differentiate between file and link uploads
+}
+
+export interface ServicesFormProps {
+  visible: boolean;
+  skills: any[];
+  servicesForm: Service;
+  setServicesForm: (form: Service) => void;
+  currentColors: any;
+  handleAddService: () => void;
+  startSelect: boolean;
+  setStartSelect: (value: boolean) => void;
+  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
+  services: Service[];
+  setServices: (services: Service[]) => void;
+  setSelectEdit: (value: any[]) => void;
+  toggleService: (value: boolean) => void;
+  selectEdit: any[];
+  setOpenAnyModal: (value: string) => void;
+  clearForm: boolean;
+  setClearForm: (value: boolean) => void;
+  type: string;
+}
+
+
+export interface Certificate {
+  id: number;
+  name: string;
+  issuedBy: string;
+  reference: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  type: 'certificate';
+  files: { uri: string; name: string; mimeType: string }[];
+  skills?: any[];
+  selectedSkills: string[];
+  media?: { uri: string; name: string; mimeType: string }[] | string; // for file or link
+  mediaType?: 'file' | 'link'; // to differentiate between file and link uploads
+}
+
+export interface CertificatesFormProps {
+  visible: boolean;
+  skills: any[];
+  certificatesForm: Certificate;
+  setCertificatesForm: (form: Certificate) => void;
+  currentColors: any;
+  handleAddCertificate: () => void;
+  startSelect: boolean;
+  setStartSelect: (value: boolean) => void;
+  setSkills: (value: { name: string; percentage: string; type: string }[]) => void;
+  certificates: Certificate[];
+  setCertificates: (certificates: Certificate[]) => void;
+  setSelectEdit: (value: any[]) => void;
+  toggleCertificate: (value: boolean) => void;
+  selectEdit: any[];
+  setOpenAnyModal: (value: string) => void;
+  clearForm: boolean;
+  setClearForm: (value: boolean) => void;
+  type: string;
+}

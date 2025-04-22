@@ -39,7 +39,8 @@ type FieldType =
   | 'hidden'
   | 'tabchoice'
   | 'typeSelector'
-  | 'select';
+  | 'select'
+  | 'status';
 
 export interface DynamicFormField {
   name: string;

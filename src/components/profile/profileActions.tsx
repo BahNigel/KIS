@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
-import { Project } from '../Messages/Chats/chatInterfaces';
+import { Certificate, Education, Project, Service } from '../Messages/Chats/chatInterfaces';
 import { Feather } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -35,77 +35,96 @@ export const encodeImageToBase64 = async (image: string | Blob): Promise<string>
   }
 };
 
-const handleChooseImage = async (setProfilePicture: (value: string | null) => void) => {  
-  try {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      alert('Permission to access camera roll is required!');
-      return;
-    }
+const handleChooseImage = async (callback: (image: { uri: string; name: string; type: string }) => void) => {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    quality: 1,
+  });
 
-    const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+  if (!result.canceled && result.assets && result.assets.length > 0) {
+    const asset = result.assets[0];
+    const fileName = asset.fileName || asset.uri.split('/').pop() || 'profile.jpg';
 
-    if (!pickerResult.canceled) {
-      setProfilePicture(pickerResult.assets[0].uri); // pickerResult.assets[0].uri is a string
-    }
-  } catch (error) {
-    console.error('Error choosing image:', error);
+    const image = {
+      uri: asset.uri,
+      name: fileName,
+      type: asset.type ?? 'image/jpeg',
+    };
+
+    callback(image);
   }
 };
 
 export default handleChooseImage;
 
 export const saveProfileData = async (
-    username: string,
-    about: string,
-    phone: string,
-    email: string,
-    profile: string | Blob,
-    skills: string, // New parameter
-    projects: string, // New parameter
-    education: string, // New parameter
-    experience: string, // New parameter
-    services: string, // New parameter
-    certificates: string, // New parameter
-    status: string
-  ): Promise<void> => {
+  username: string,
+  about: string,
+  phone: string,
+  email: string,
+  profile: { uri: string } | Blob,
+  skills: Record<string, any>[],
+  projects: Project[],
+  education: Education[],
+  experience: Record<string, any>[],
+  service: Service[],
+  certificate: Certificate[],
+  status: string
+): Promise<void> => {
   try {
     const token = await AsyncStorage.getItem('userToken');
-    if (token) {
-      const jsonObject = JSON.parse(token);
-      
-      // Encode the selected image to base64
-      const profileImageBase64: string = await encodeImageToBase64(profile); // Corrected type as string
+    if (!token) return;
+    const { access } = JSON.parse(token);
 
-      const formData = new FormData();
-      formData.append('username', username);
-      formData.append('about', about);
-      formData.append('phone_number', phone);
-      formData.append('email', email);
-      formData.append('profile_picture', profileImageBase64);
-
-      const response = await axios.put(API_BASE_URL + '/user/user-info/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${jsonObject.access}`,
-        },
-      });
-
-      if (response.status === 200) {
-        console.log('Profile data saved successfully');
-      } else {
-        console.error('Failed to save profile data');
-      }
+    // Convert image object to base64 string
+    let profilePicBase64: string;
+    if (profile && typeof profile !== 'string') {
+      profilePicBase64 = await encodeImageToBase64(
+        typeof profile === 'object' && 'uri' in profile ? profile.uri : profile
+      );
+    } else {
+      profilePicBase64 = profile as string;
     }
+
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('about', about);
+    formData.append('phone_number', phone);
+    formData.append('email', email);
+    formData.append('profile_picture', profilePicBase64);
+
+    // Append each array as a JSON string
+    formData.append('skills', JSON.stringify(skills));
+    formData.append('projects', JSON.stringify(projects));
+    formData.append('education', JSON.stringify(education));
+    formData.append('experience', JSON.stringify(experience));
+    formData.append('service', JSON.stringify(service));
+    formData.append('certificate', JSON.stringify(certificate));
+
+    formData.append('status', status);
+
+    // const response = await axios.put(
+    //   `${API_BASE_URL}/user/user-info/`,
+    //   formData,
+    //   {
+    //     headers: {
+    //       'Content-Type': 'multipart/form-data',
+    //       Authorization: `Bearer ${access}`,
+    //     },
+    //   }
+    // );
+
+    // if (response.status === 200) {
+    //   console.log('Profile data saved successfully');
+    // } else {
+    //   console.error('Failed to save profile data');
+    // }
   } catch (error) {
     console.error('Error saving profile data:', error);
   }
 };
+
 
 const handleDeleteSkill = (index: number, skills: any[], setSkills: (value: any[]) => void, setStartSelect: (value: boolean) => void) => {
   // Remove the name at the given index
@@ -208,7 +227,8 @@ export const handleAddEntry = (
     project: ['name', 'description', 'skills'],
     education: ['name', 'description', 'degree', 'grades', 'field', 'skills'],
     experience: ['name', 'employmentType', 'location', 'whereFound', 'company', 'description'],
-    certification: ['name', 'institution', 'dateIssued'],
+    certificate: ['name', 'issuedBy', 'description', 'selectedSkills'],
+    service: ['name', 'description', 'selectedSkills', 'price'],
     // Add more entry types as needed
   };
 

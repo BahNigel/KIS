@@ -9,28 +9,27 @@ import ModalRightToLeft from '@/models/ModalRightToLeft';
 import { Colors } from '@/constants/Colors';
 import handleChooseImage, { encodeImageToBase64, saveProfileData } from './profileActions';
 import JobInputs from './Inputs';
-import Status from './inputs/status';
+import DynamicForm, { DynamicFormField } from '@/models/DynamicForm';
 
-export default function EditProfile({ visible, onClose }:{visible:boolean, onClose:()=>void}) {
+export default function EditProfile({ visible, onClose }: { visible: boolean, onClose: () => void }) {
   const [userName, setUserName] = useState('');
   const [about, setAbout] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
-  const [profilePicture, setProfilePicture] = useState<ImageSourcePropType | null>(null); // Change here
+  const [profilePicture, setProfilePicture] = useState<{ uri: string; name: string; type: string; } | null>(null);
   const [userData, setUserData] = useState(null);
-  const [skills, setSkills] = useState('');
-  const [projects, setProjects] = useState('');
-  const [education, setEducation] = useState('');
-  const [experience, setExperience] = useState('');
-  const [services, setServices] = useState('');
-  const [certificates, setCertificates] = useState('');
+  const [skills, setSkills] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [education, setEducation] = useState<any[]>([]);
+  const [experience, setExperience] = useState<any[]>([]);
   const [status, setStatus] = useState('');
   const [openStatus, setOpenStatus] = useState(true);
-  const closeStatus = () =>{setOpenStatus(false)}
-  
-  const scheme = useColorScheme(); // Get the current theme (light or dark)
-  
-  // Dynamically select colors based on the current theme
+
+  const closeStatus = () => setOpenStatus(false);
+
+  const scheme = useColorScheme();
   const currentColors = scheme === 'dark' ? Colors.dark : Colors.light;
 
   const fetchUserData = async () => {
@@ -39,7 +38,11 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
       if (savedUserData) {
         const parsedUserData = JSON.parse(savedUserData);
         setUserData(parsedUserData);
-        setProfilePicture({ uri: API_BASE_URL + parsedUserData.profile_picture }); // Update to an object with uri
+        setProfilePicture({
+          uri: API_BASE_URL + parsedUserData.profile_picture,
+          name: '',
+          type: 'image/jpeg' // or an appropriate MIME type
+        });
         setUserName(parsedUserData.username);
         setPhoneNumber(parsedUserData.phone_number);
         setAbout(parsedUserData.about);
@@ -62,22 +65,57 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
   }, []);
 
   const handleSave = () => {
-    saveProfileData(
-      userName, 
-      about, 
-      phoneNumber, 
-      email, 
-      profilePicture as string | Blob, 
-      skills, 
-      projects, 
-      education, 
-      experience, 
-      services, 
+    const combinedData = {
+      ...generalForm,
+      skills,
+      projects,
+      education,
+      experience,
+      services,
       certificates,
-      status
-    );
+      profilePicture,
+    };
+
+    console.log('Combined Form Data:', combinedData);
     onClose();
   };
+
+
+  type GeneralForm = {
+    userName: string;
+    about: string;
+    phoneNumber: string;
+    email: string;
+    status: string;
+  };
+
+  const [generalForm, setGeneralForm] = useState<GeneralForm>({
+    userName: '',
+    about: '',
+    phoneNumber: '',
+    email: '',
+    status: '',
+  });
+
+  const setValue = <T extends keyof GeneralForm>(field: T, value: GeneralForm[T]) => {
+    setGeneralForm({
+      ...generalForm,
+      [field]: value,
+    });
+  };
+
+  const dynamicFields: DynamicFormField[] = [
+    { name: 'userName', label: 'User Name', type: 'text', value: (value) => setValue("userName", value), placeholder: 'User Name', required: true },
+    { name: 'about', label: 'About', type: 'text', value: (value) => setValue("about", value), placeholder: 'About', required: false },
+    { name: 'phoneNumber', label: 'Phone Number', type: 'text', value: (value) => setValue("phoneNumber", value), placeholder: 'Phone Number', required: true, keyboardType: 'phone-pad' },
+    { name: 'email', label: 'Email', type: 'text', value: (value) => setValue("email", value), placeholder: 'Email', required: true, keyboardType: 'email-address' },
+    {
+      name: 'status', label: 'Status', type: 'typeSelector', placeholder: 'Type or select status (e.g. Busy)', options: [
+        'Busy', 'Available', 'At School', 'At the Movies', 'At Work', 'In a Meeting',
+        'Sleeping', 'Out for a Walk', 'On a Call', 'Eating', 'In Traffic'
+      ], value: (value) => setValue('status', value), required: false
+    },
+  ];
 
   return (
     <ModalRightToLeft
@@ -85,123 +123,72 @@ export default function EditProfile({ visible, onClose }:{visible:boolean, onClo
       onClose={onClose}
       name="Edit Profile"
       headerContent={
-        <Text style={{ color: currentColors.textPrimary, fontWeight: 700, fontSize: 20 }} onPress={onClose}>
+        <Text style={{ color: currentColors.textPrimary, fontWeight: '700', fontSize: 20 }} onPress={onClose}>
           Edit
         </Text>
       }
     >
       <ScrollView style={{ flex: 1, backgroundColor: currentColors.background }} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => handleChooseImage(() => setProfilePicture)}>
-          {profilePicture ? (
-            <Image source={profilePicture} style={{ width: 100, height: 100, borderRadius: 50 }} />
-          ) : (
-            <Icon name="user-circle" size={100} color={currentColors.icon} />
-          )}
+
+      <TouchableOpacity
+        style={{ alignSelf: 'center', marginTop: 20 }}
+        onPress={() =>
+          handleChooseImage((image) => {
+            setProfilePicture(image); // set full object with uri, name, type
+          })
+        }
+      >
+        {profilePicture?.uri ? (
+          <Image
+            source={{ uri: profilePicture.uri }}
+            style={{ width: 100, height: 100, borderRadius: 50 }}
+          />
+        ) : (
+          <Icon name="user-circle" size={100} color={currentColors.icon} />
+        )}
+        <Text
+          style={{
+            marginTop: 8,
+            textAlign: 'center',
+            color: currentColors.textSecondary,
+            fontSize: 12,
+          }}
+        >
+          Tap to {profilePicture ? 'change' : 'add'} profile picture
+        </Text>
+      </TouchableOpacity>
+
+
+
+        <DynamicForm
+          fields={dynamicFields}
+          formData={generalForm}
+          setFormData={setGeneralForm}
+          setAction={function (action: boolean): void {
+            console.log('Function not implemented.');
+          }}
+        />
+
+        <JobInputs
+          currentColors={currentColors}
+          skills={skills}
+          setSkills={setSkills}
+          projects={projects}
+          setProjects={setProjects}
+          education={education}
+          setEducation={setEducation}
+          experience={experience}
+          setExperience={setExperience}
+          services={services}
+          setServices={setServices}
+          certificates={certificates}
+          setCertificates={setCertificates}
+        />
+
+        <TouchableOpacity onPress={handleSave} style={{ alignSelf: 'flex-end', backgroundColor: currentColors.primary, padding: 10, marginVertical: 20, marginRight: 20, borderRadius: 10 }}>
+          <Text style={{ color: currentColors.buttonText, fontWeight: '600' }}>Save</Text>
         </TouchableOpacity>
 
-        <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
-        <MaterialCommunityIcons name="account" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
-        <TextInput
-          style={{
-            height: 40,
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            marginBottom: 10,
-            color: currentColors.textPrimary,
-
-            marginLeft: 10,
-            
-            width: '90%',
-          }}
-          placeholder="User Name"
-          placeholderTextColor={currentColors.textSecondary}
-          value={userName}
-          onChangeText={setUserName}
-        />
-      </View>
-
-      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
-        <MaterialCommunityIcons name="information" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
-        <TextInput
-          style={{
-            height: 40,
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            marginBottom: 10,
-            color: currentColors.textPrimary,
-            
-            marginLeft: 10,
-            width: '90%',
-          }}
-          placeholder="About"
-          placeholderTextColor={currentColors.textSecondary}
-          value={about}
-          onChangeText={setAbout}
-        />
-      </View>
-
-      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
-        <MaterialCommunityIcons name="phone" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
-        <TextInput
-          style={{
-            height: 40,
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            marginBottom: 10,
-            color: currentColors.textPrimary,
-            
-            marginLeft: 10,
-            
-            width: '90%',
-          }}
-          placeholder="Phone Number"
-          placeholderTextColor={currentColors.textSecondary}
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-        />
-      </View>
-
-      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
-        <MaterialCommunityIcons name="email" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
-        <TextInput
-          style={{
-            height: 40,
-            borderBottomWidth: 1,
-            borderBottomColor: currentColors.textSecondary,
-            marginBottom: 10,
-            color: currentColors.textPrimary,
-            
-            marginLeft: 10,
-            
-            width: '90%',
-          }}
-          placeholder="Email"
-          placeholderTextColor={currentColors.textSecondary}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-      </View>
-
-      <View style={{ marginVertical: 10, flexDirection: 'row', alignItems: 'center' }}>
-        <MaterialCommunityIcons name="circle" size={34} color={currentColors.textSecondary} style={{ width: '10%' }} />
-        <View style={{height: 40,borderBottomWidth: 1,borderBottomColor: currentColors.textSecondary,marginBottom: 10, marginHorizontal: 10,width: '70%', }}>
-          <Text style={{color: currentColors.textPrimary,}} >Satus</Text>
-          <Text style={{color: currentColors.textSecondary}}>{status}</Text>
-        </View>
-        
-        <TouchableOpacity onPress={()=>setOpenStatus(true)}>
-          <MaterialCommunityIcons name="plus" size={34} color={currentColors.textSecondary} />
-        </TouchableOpacity>
-      </View>
-      <Status visible={openStatus} onClose={closeStatus} status={status} setStatus={setStatus} currentColors={currentColors}/>
-
-        <JobInputs currentColors={currentColors} />
-
-        <TouchableOpacity onPress={handleSave} style={{ alignSelf: 'flex-end', backgroundColor: currentColors.primary, padding: 10 }}>
-          <Text style={{ color: currentColors.buttonText }}>Save</Text>
-        </TouchableOpacity>
       </ScrollView>
     </ModalRightToLeft>
   );
