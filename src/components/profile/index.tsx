@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Text, TouchableOpacity, ScrollView, TextInput, Image, View, useColorScheme, ImageSourcePropType } from 'react-native';
+import { Text, TouchableOpacity, ScrollView, TextInput, Image, View, useColorScheme, ImageSourcePropType, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '@/src/routes';
+import ROUTES, { API_BASE_URL } from '@/src/routes';
 import ModalRightToLeft from '@/models/ModalRightToLeft';
 import { Colors } from '@/constants/Colors';
 import handleChooseImage, { encodeImageToBase64, saveProfileData } from './profileActions';
 import JobInputs from './Inputs';
 import DynamicForm, { DynamicFormField } from '@/models/DynamicForm';
+import { postRequest } from '@/src/routes/post';
+import { CacheKeys, CacheTypes } from '@/src/routes/cacheKeys';
 
 export default function EditProfile({ visible, onClose }: { visible: boolean, onClose: () => void }) {
   const [userName, setUserName] = useState('');
@@ -64,7 +66,9 @@ export default function EditProfile({ visible, onClose }: { visible: boolean, on
     fetchUserData();
   }, []);
 
-  const handleSave = () => {
+
+  const handleSave = async () => {
+
     const combinedData = {
       ...generalForm,
       skills,
@@ -77,8 +81,30 @@ export default function EditProfile({ visible, onClose }: { visible: boolean, on
     };
 
     console.log('Combined Form Data:', combinedData);
-    onClose();
-  };
+  
+      const cacheType = CacheTypes.AUTH_CACHE;
+      const cacheKey = CacheKeys.LOGIN_DATA;
+  
+      const options = {
+        headers: { 'Content-Type': 'application/json' },
+        cacheKey: cacheKey,
+        cacheType: cacheType,
+        successMessage: 'Profile Info uploaded successful!',
+        errorMessage: 'Profile info upload failed! Please try again.',
+      };
+  
+      const response = await postRequest(ROUTES.user.profile, combinedData, options);
+  
+  
+      if (response.success) {
+        const { token } = response.data;
+        console.log('Login Successful:', response.data);
+        onClose();
+      } else {
+        console.error('Login error:', response.message);
+        Alert.alert('Login Failed', response.message || 'Invalid credentials. Please try again.');
+      }
+    };
 
 
   type GeneralForm = {

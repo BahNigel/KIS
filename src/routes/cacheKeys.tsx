@@ -8,7 +8,7 @@ export enum CacheTypes {
     DEFAULT = 'default',            // Default cache type
     USER_CACHE = 'user_cache',      // Cache related to user data
     MESSAGES_CACHE = 'messages_cache', // Cache related to messages
-    AUTH_CACHE = 'auth13_cache',      // Cache related to authentication
+    AUTH_CACHE = 'auth120_cache',      // Cache related to authentication
     NOTIFICATIONS_CACHE = 'notifications_cache', // Cache for notifications
     MEDIA_CACHE = 'media_cache',    // Cache for media files (images, videos, etc.)
     REGISTERED_CONTACTS = 'registered_contacts',

@@ -5,18 +5,33 @@ import { getCachedDataByKey, setCachedDataByKey } from '../cache';
 import { CacheKeys, CacheTypes } from '../cacheKeys';
 
 /**
+ * Recursively scans the object and replaces file-like objects with their URI.
+ * Supports { uri: string, name: string, type: string } structure from image/file pickers.
+ */
+const sanitizeFileData = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeFileData(item));
+  }
+
+  if (obj && typeof obj === 'object') {
+    // Check if it looks like a file (common structure in React Native)
+    if (obj.uri && obj.name && obj.type) {
+      return obj.uri;
+    }
+
+    // Otherwise, recurse
+    const sanitized: any = {};
+    for (const key in obj) {
+      sanitized[key] = sanitizeFileData(obj[key]);
+    }
+    return sanitized;
+  }
+
+  return obj;
+};
+
+/**
  * Generalized POST Function
- *
- * @param {string} url - The API endpoint URL to send the POST request to.
- * @param {any} data - The payload data to send in the POST request.
- * @param {object} options - Additional options:
- *   @param {object} [options.headers] - Additional headers for the request.
- *   @param {string} [options.cacheKey] - Key to cache the response.
- *   @param {string} [options.cacheType] - Type of cache directory (default: 'default').
- *   @param {string} [options.successMessage] - Message to display on success.
- *   @param {string} [options.errorMessage] - Message to display on error.
- *
- * @returns {Promise<{ success: boolean, data?: any, message: string }>}
  */
 export const postRequest = async (
   url: string,
@@ -56,7 +71,10 @@ export const postRequest = async (
 
     const headers = { ...defaultHeaders, ...options.headers };
 
-    const response = await apiService.post(url, data, headers);
+    // 🧼 Sanitize file-like objects before sending
+    const sanitizedData = sanitizeFileData(data);
+
+    const response = await apiService.post(url, sanitizedData, headers);
     const responseData = await response.json();
 
     if (response.ok) {
